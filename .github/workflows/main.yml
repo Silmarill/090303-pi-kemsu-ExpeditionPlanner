@@ -16,17 +16,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3        
 
-      - name: Find MSBuild Location
-        uses: geekynt/vswhere-action@v2
-        id: vswhere
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
         with:
-          products: 'Microsoft.VisualStudio.Product.Enterprise'
-          requires: 'Microsoft.Component.MSBuild'
-          latestInstall: true
-      
-      - name: Configure MSBuild Path
-        run: |
-          echo "${{ steps.vswhere.outputs.path }}" >> $GITHUB_PATH        
+          vs-version: '[16.0,17.0)' # Диапазон версий Visual Studio (VS2019)
+          vs-prerelease: false
+          msbuild-architecture: x64     
 
       - name: Restore NuGet Packages
         run: nuget restore YourSolution.sln
