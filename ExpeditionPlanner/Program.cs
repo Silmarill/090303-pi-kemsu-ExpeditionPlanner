@@ -1,19 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using ExpeditionPlanner.Factories;
 // Обратите внимание на совпадение пространств имен и папок
 using ExpeditionPlanner.Models;
-using ExpeditionPlanner.Factories;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace ExpeditionPlanner {
   internal class Program {
     static void Main() {
+      Console.OutputEncoding = Encoding.UTF8;
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
             new ExplorationMissionFactory(),
             new CombatMissionFactory(),
-            new CargoMissionFactory()
+            new CargoMissionFactory(),
+            new DiplomaticMissionFactory()
         };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
