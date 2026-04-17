@@ -9,7 +9,7 @@ param(
 $logContent = Get-Content -Path $LogFilePath -Raw
 
 # Шаблон регулярного выражения для выделения предупреждений
-$regex = '^(?<File>.+?):\s+(?<Severity>\w+)\s+(?<Code>\w+\s\d+)\:\s+(?<Message>.+)($$\S+$$)?$'
+$regex = '^(?<File>.+?):\s+(?<Severity>\w+)\s+(?<Code>\w+\s\d+)\:\s+(?<Message>.+)(?:$$\S+$$)?$'
 
 # Парсим лог и получаем коллекцию предупреждений
 $warnings = Select-String -Pattern $regex -InputObject $logContent -AllMatches |
@@ -17,7 +17,7 @@ $warnings = Select-String -Pattern $regex -InputObject $logContent -AllMatches |
         $_ | Select-Object -Expand Matches |
         ForEach-Object {
             @{
-                File = $_ -replace "^.*\\ExpeditionPlanner\\", "" -replace "$([^)]+)$", '$1'
+                File = $_ -replace "(^.*)\\ExpeditionPlanner\\", "" -replace "$([^)]+)$", '$1'
                 Severity = $_.Groups['Severity'].Value
                 Code = $_.Groups['Code'].Value
                 Message = $_.Groups['Message'].Value.Trim() -replace "^$([^)]+)$", '$1'
