@@ -1,5 +1,4 @@
 ﻿using ExpeditionPlanner.Models;
-using System;
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
