@@ -18,10 +18,6 @@ jobs:
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
-        with:
-          vs-version: '[16.0,17.0)' # Диапазон версий Visual Studio (VS2019)
-          vs-prerelease: false
-          msbuild-architecture: x64     
 
       - name: Restore NuGet Packages
         run: nuget restore YourSolution.sln
