@@ -13,7 +13,8 @@ namespace ExpeditionPlanner {
       {
             new ExplorationMissionFactory(),
             new CombatMissionFactory(),
-            new CargoMissionFactory()
+            new CargoMissionFactory(),
+            new DiplomaticMissonFactory()
         };
 
       Console.WriteLine("=== План миссий на месяц ===\n");

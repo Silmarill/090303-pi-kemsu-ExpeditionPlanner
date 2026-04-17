@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Factories\CargoMissionFactory.cs" />
     <Compile Include="Factories\CombatMissionFactory.cs" />
+    <Compile Include="Factories\DiplomaticMissionFactory.cs" />
     <Compile Include="Factories\ExplorationMissionFactory.cs" />
     <Compile Include="Factories\MissionFactory.cs" />
     <Compile Include="Models\CargoMission.cs" />
