@@ -3,7 +3,7 @@
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
     public DiplomaticMission() {
-      Name = "Дипломатическая миссия";
+      Name = "📄 Дипломатическая миссия";
       Duration = 20;
     }
 
