@@ -9,27 +9,31 @@ on:
       - 'main'
 
 jobs:
-  basic-code-check:
+  build-and-test:
     runs-on: windows-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup .NET Framework Environment
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '4.7.2-x86' # Установка нужного окружения .NET Framework
+      - name: Setup MSBuild Path
+        uses: warrenbuckley/Setup-MSBuild@v1
 
-      - name: Install StyleCop
-        run: dotnet tool install --global dotnet-stylecop
+      - name: Restore NuGet Packages
+        run: nuget restore YourSolution.sln
+
+      - name: Build Project
+        run: msbuild YourProject.csproj /property:Configuration=Release
 
       - name: Run StyleCop Analysis
-        run: dotnet stylecop .
+        run: dotnet tool install --global dotnet-stylecop && dotnet stylecop .
 
-      - name: Upload Results as Artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Report
+        run: echo "::set-output name=report::$(dotnet stylecop --format json)"
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: tholladay/create-pull-request-comment@v2
         with:
-          name: stylecop-artifact-${{ github.run_number }}-${{ github.sha }}
-          path: ./StyleCopResults.xml
-          include-hidden-files: true
+          comment: '${{ steps.create-report.outputs.report }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
