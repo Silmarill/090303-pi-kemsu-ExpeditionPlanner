@@ -1,11 +1,44 @@
-name: Hello World Test
+name: Basic Code Quality Check
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'group4/**'
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
-  say-hello:
-    runs-on: ubuntu-latest
-    
+  build-and-test:
+    runs-on: windows-latest
+
     steps:
-      - name: Say Hello!
-        run: echo "Hello from GitHub Actions!"
+      - name: Checkout Repository
+        uses: actions/checkout@v3        
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Restore NuGet Packages
+        run: nuget restore ExpeditionPlanner.slnx
+
+      - name: Build Project
+        run: msbuild ExpeditionPlanner/ExpeditionPlanner.csproj /property:Configuration=Release
+
+      - name: Run StyleCop Analysis
+        run: dotnet tool install --global dotnet-stylecop && dotnet stylecop .
+
+      - name: Create Report
+        run: echo "::set-output name=report::$(dotnet stylecop --format json)"
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          title: 'Code Review Summary'
+          body: '${{ steps.create-report.outputs.report }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          commit-message: 'Automated Code Review Comments'
+          branch: 'code-review-comments'
+          delete-branch: true
