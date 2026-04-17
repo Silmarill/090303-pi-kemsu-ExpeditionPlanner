@@ -28,7 +28,8 @@ jobs:
         run: dotnet stylecop .
 
       - name: Upload Results as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: stylecop-results
+          name: stylecop-artifact-${{ github.run_number }}-${{ github.sha }}
           path: ./StyleCopResults.xml
+          include-hidden-files: true
