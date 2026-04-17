@@ -3,7 +3,7 @@
 namespace ExpeditionPlanner.Factories {
   public class DiplomaticMissionFactory : MissionFactory {
     public override Mission CreateMission() {
-      // Block: object creation
+      // Создание объекта
       Mission mission;
 
       mission = new DiplomaticMission();
