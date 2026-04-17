@@ -26,7 +26,7 @@ jobs:
         run: msbuild ExpeditionPlanner/ExpeditionPlanner.csproj /property:Configuration=Release
 
       - name: Run StyleCop Analysis
-        run: dotnet tool install --global dotnet-stylecop && dotnet stylecop .
+        run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj
 
       - name: Create Report
         run: echo "::set-output name=report::$(dotnet stylecop --format json)"
