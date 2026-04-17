@@ -1,9 +1,9 @@
 ﻿using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
-  public class CargoMissionFactory : MissionFactory {
+  public class DiplomaticMissionFactory : MissionFactory {
     public override Mission CreateMission() {
-      return new CargoMission();
+      return new DiplomaticMission();
     }
   }
 }
