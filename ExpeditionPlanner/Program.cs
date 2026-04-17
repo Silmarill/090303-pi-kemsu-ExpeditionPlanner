@@ -10,13 +10,16 @@ namespace ExpeditionPlanner {
     static void Main() {
       Console.OutputEncoding = Encoding.UTF8;
       // Создаём фабрики разных типов
-      List<MissionFactory> factories = new List<MissionFactory>
+      int defaultPeopleCount;
+      defaultPeopleCount = 100;
+
+      List <MissionFactory> factories = new List<MissionFactory>
       {
             new ExplorationMissionFactory(),
             new CombatMissionFactory(),
             new CargoMissionFactory(),
             new DiplomaticMissionFactory(),
-            new RescueMissionFactory(100),
+            new RescueMissionFactory(defaultPeopleCount),
             new RandomMissionFactory()
         };
 
