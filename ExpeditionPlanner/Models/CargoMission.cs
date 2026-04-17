@@ -4,15 +4,15 @@ namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
     public CargoMission() {
       Name = "Грузовая миссия";
-      Duration = 10;
+      Duration = 7;
     }
 
     public override void Execute() {
-      Console.WriteLine(" Доставка ресурсов на орбитальную станцию");
+      Console.WriteLine("Доставка ресурсов на колонию");
     }
 
     public override string GetReport() {
-      return $" {Name}: доставлено 500 тонн груза";
+      return "Грузовая миссия: доставлено 500 тонн ресурсов";
     }
   }
 }

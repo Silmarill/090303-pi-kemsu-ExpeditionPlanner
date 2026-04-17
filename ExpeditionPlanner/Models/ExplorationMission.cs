@@ -4,15 +4,15 @@ namespace ExpeditionPlanner.Models {
   public class ExplorationMission : Mission {
     public ExplorationMission() {
       Name = "Исследовательская миссия";
-      Duration = 30;
+      Duration = 14;
     }
 
     public override void Execute() {
-      Console.WriteLine(" Картографирование сектора, сбор научных данных");
+      Console.WriteLine("Картографирование сектора, сбор образцов Echos");
     }
 
     public override string GetReport() {
-      return $" {Name}: открыто 5 новых звёздных систем";
+      return "Исследовательская миссия: открыто 5 новых систем";
     }
   }
 }

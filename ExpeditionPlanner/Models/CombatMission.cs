@@ -4,16 +4,15 @@ namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
     public CombatMission() {
       Name = "Боевая миссия";
-      Duration = 15;
+      Duration = 10;
     }
 
     public override void Execute() {
-      Console.WriteLine(" Патрулирование, уничтожение пиратов");
+      Console.WriteLine("Патрулирование сектора, уничтожение пиратов");
     }
 
     public override string GetReport() {
-      return $" {Name}: уничтожено 12 вражеских кораблей";
+      return "Боевая миссия: уничтожено 12 вражеских кораблей";
     }
   }
-
 }
