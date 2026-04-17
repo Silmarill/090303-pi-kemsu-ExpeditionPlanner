@@ -1,11 +1,34 @@
-name: Hello World Test
+name: Basic Code Quality Check
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'group4/**'
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
-  say-hello:
-    runs-on: ubuntu-latest
-    
+  basic-code-check:
+    runs-on: windows-latest
+
     steps:
-      - name: Say Hello!
-        run: echo "Hello from GitHub Actions!"
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Framework Environment
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '4.7.2-x86' # Установка нужного окружения .NET Framework
+
+      - name: Install StyleCop
+        run: dotnet tool install --global dotnet-stylecop
+
+      - name: Run StyleCop Analysis
+        run: dotnet stylecop .
+
+      - name: Upload Results as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: stylecop-results
+          path: ./StyleCopResults.xml
