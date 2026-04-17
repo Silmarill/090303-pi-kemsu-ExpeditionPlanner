@@ -23,7 +23,7 @@ jobs:
         run: nuget restore ExpeditionPlanner.slnx
 
       - name: Build Project
-        run: msbuild ExpeditionPlanner.csproj /property:Configuration=Release
+        run: msbuild ExpeditionPlanner/ExpeditionPlanner.csproj /property:Configuration=Release
 
       - name: Run StyleCop Analysis
         run: dotnet tool install --global dotnet-stylecop && dotnet stylecop .
