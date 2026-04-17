@@ -4,6 +4,7 @@
     <File Path=".gitignore" />
     <File Path="LICENSE" />
     <File Path="README.md" />
+    <File Path="Settings.StyleCop.json" />
   </Folder>
   <Project Path="ExpeditionPlanner/ExpeditionPlanner.csproj" Id="ad15a5eb-0de0-4505-93c1-9871e489a366" />
 </Solution>

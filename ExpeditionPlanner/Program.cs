@@ -6,7 +6,7 @@ using ExpeditionPlanner.Models;
 using ExpeditionPlanner.Factories;
 
 namespace ExpeditionPlanner {
-  internal class Program {
+  public class Program {
     static void Main() {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
@@ -18,7 +18,8 @@ namespace ExpeditionPlanner {
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
-      foreach (var factory in factories) {
+      foreach (var factory in factories)
+        {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
         Mission mission = factory.CreateMission();
 
