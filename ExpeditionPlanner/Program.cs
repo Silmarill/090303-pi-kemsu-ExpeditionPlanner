@@ -30,9 +30,9 @@ namespace ExpeditionPlanner {
       }
 
       // Легко добавить новую миссию, не меняя существующий код!
-      //MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
-      //Mission diplomaticMission = newFactory.CreateMission();
-      //diplomaticMission.Execute();
+      MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
+      Mission diplomaticMission = newFactory.CreateMission();
+      diplomaticMission.Execute();
     }
   }
 }
