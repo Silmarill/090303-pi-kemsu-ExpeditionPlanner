@@ -17,7 +17,7 @@ $warnings = Select-String -Pattern $regex -InputObject $logContent -AllMatches |
         $_ | Select-Object -Expand Matches |
         ForEach-Object {
             @{
-                File = ($_ -replace "^.*\\ExpeditionPlanner\\", "") -replace "$([^)]+)$", '$1'
+                File = $_ -replace "^.*\\ExpeditionPlanner\\", "" -replace "$([^)]+)$", '$1'
                 Severity = $_.Groups['Severity'].Value
                 Code = $_.Groups['Code'].Value
                 Message = $_.Groups['Message'].Value.Trim() -replace "^$([^)]+)$", '$1'
