@@ -7,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    public RescueMissionFactory() { }
+    int _peoplecount;
+
+    public RescueMissionFactory(int peoplecount) {
+      _peoplecount = peoplecount;
+    }
     
     public override Mission CreateMission() {
-      return new RescueMission();
+      return new RescueMission(_peoplecount);
     }
   }
 }
