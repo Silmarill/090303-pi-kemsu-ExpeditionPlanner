@@ -33,7 +33,12 @@ jobs:
 
       - name: Comment on Pull Request
         if: github.event_name == 'pull_request'
-        uses: tholladay/create-pull-request-comment@v2
+        uses: peter-evans/create-pull-request@v8
         with:
-          comment: '${{ steps.create-report.outputs.report }}'
+          title: 'Code Review Summary'
+          body: '${{ steps.create-report.outputs.report }}'
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          commit-message: 'Automated Code Review Comments'
+          branch: 'code-review-comments'
+          delete-branch: true
