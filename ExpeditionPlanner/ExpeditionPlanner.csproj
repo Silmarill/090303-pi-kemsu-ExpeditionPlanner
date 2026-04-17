@@ -50,6 +50,7 @@
     <Compile Include="Factories\MissionFactory.cs" />
     <Compile Include="Models\CargoMission.cs" />
     <Compile Include="Models\CombatMission.cs" />
+    <Compile Include="Models\DiplomaticMission.cs" />
     <Compile Include="Models\ExplorationMission.cs" />
     <Compile Include="Models\Mission.cs" />
     <Compile Include="Program.cs" />
