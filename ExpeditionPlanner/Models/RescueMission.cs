@@ -10,11 +10,11 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine(" Спасательная операция");
+      Console.WriteLine($" Спасательная операция: эвакувция {_peopleCount} человек");
     }
 
     public override string GetReport() {
-      return $" {Name}: открыто 5 новых звёздных систем";
+      return $" {Name}: спасено {_peopleCount} человек";
     }
   }
 }
