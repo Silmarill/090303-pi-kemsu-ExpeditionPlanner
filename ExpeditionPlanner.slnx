@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Элементы решения/">
     <File Path=".editorconfig" />
+    <File Path=".github/scripts/Parse-BuildLog.ps1" />
     <File Path=".github/workflows/main.yml" />
     <File Path=".gitignore" />
     <File Path="LICENSE" />
