@@ -15,7 +15,8 @@ namespace ExpeditionPlanner {
             new CombatMissionFactory(),
             new CargoMissionFactory(),
             new DiplomaticMissionFactory()
-        };
+      };
+
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 

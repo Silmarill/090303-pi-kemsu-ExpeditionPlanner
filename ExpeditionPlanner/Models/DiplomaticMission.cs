@@ -8,11 +8,11 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine(" Переговоры с инопланетной цивилизацией, подписание договора ");
+      Console.WriteLine("Переговоры с инопланетной цивилизацией, подписание договора");
     }
 
     public override string GetReport() {
-      return " Дипломатическая миссия: заключено 3 торговых соглашения ";
+      return "Дипломатическая миссия: заключено 3 торговых соглашения";
     }
   }
 }
