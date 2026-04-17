@@ -1,15 +1,13 @@
 ﻿using ExpeditionPlanner.Models;
+using System;
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    private int _peopleCount;
-
-    public RescueMissionFactory(int peopleCount) {
-      _peopleCount = peopleCount;
-    }
+    private Random _random = new Random();
 
     public override Mission CreateMission() {
-      return new RescueMission(_peopleCount);
+      int peopleCount = _random.Next(10, 101);
+      return new RescueMission(peopleCount);
     }
   }
 }
