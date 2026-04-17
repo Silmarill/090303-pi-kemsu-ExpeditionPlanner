@@ -20,10 +20,10 @@ jobs:
         uses: microsoft/setup-msbuild@v3
 
       - name: Restore NuGet Packages
-        run: nuget restore YourSolution.sln
+        run: nuget restore ExpeditionPlanner.slnx
 
       - name: Build Project
-        run: msbuild YourProject.csproj /property:Configuration=Release
+        run: msbuild ExpeditionPlanner.csproj /property:Configuration=Release
 
       - name: Run StyleCop Analysis
         run: dotnet tool install --global dotnet-stylecop && dotnet stylecop .
