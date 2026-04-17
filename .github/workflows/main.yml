@@ -14,10 +14,19 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3        
 
-      - name: Setup MSBuild Path
-        uses: warrenbuckley/Setup-MSBuild@v1
+      - name: Find MSBuild Location
+        uses: geekynt/vswhere-action@v2
+        id: vswhere
+        with:
+          products: 'Microsoft.VisualStudio.Product.Enterprise'
+          requires: 'Microsoft.Component.MSBuild'
+          latestInstall: true
+      
+      - name: Configure MSBuild Path
+        run: |
+          echo "${{ steps.vswhere.outputs.path }}" >> $GITHUB_PATH        
 
       - name: Restore NuGet Packages
         run: nuget restore YourSolution.sln
