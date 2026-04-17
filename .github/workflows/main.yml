@@ -30,7 +30,7 @@ jobs:
           Set-ExecutionPolicy Bypass -Scope Process -Force
           & "${{ github.workspace }}/.github/scripts/Parse-BuildLog.ps1" `
             -LogFilePath "${{ github.workspace }}/build.log" `
-            -OutputFilePath "${{ github.workspace }}/stylecop_report.json"
+            -OutputFilePath "${{ github.workspace }}/stylecop_report.txt"
 
       - name: Archive Reports
         uses: actions/upload-artifact@v4

@@ -9,7 +9,7 @@ param(
 $logContent = Get-Content -Path $LogFilePath -Raw
 
 # Шаблон регулярного выражения для выделения предупреждений
-$regex = '(.*):\s*(warning\s\w+)\:\s*(.*)'
+$regex = '^(?<File>.+?):\s+(?<Severity>\w+)\s+(?<Code>\w+\s\d+)\:\s+(?<Message>.+)($$\S+$$)?$'
 
 # Парсим лог и получаем коллекцию предупреждений
 $warnings = Select-String -Pattern $regex -InputObject $logContent -AllMatches |
@@ -17,9 +17,10 @@ $warnings = Select-String -Pattern $regex -InputObject $logContent -AllMatches |
         $_ | Select-Object -Expand Matches |
         ForEach-Object {
             @{
-                File = ($_.Groups[1].Value -split '\\')[2..($_.Groups[1].Value.Split('\').Count - 1)] -join '\';
-                Code = $_.Groups[2].Value;
-                Message = $_.Groups[3].Value.Trim()
+                File = ($_ -replace "^.*\\ExpeditionPlanner\\", "") -replace "$([^)]+)$", '$1'
+                Severity = $_.Groups['Severity'].Value
+                Code = $_.Groups['Code'].Value
+                Message = $_.Groups['Message'].Value.Trim() -replace "^$([^)]+)$", '$1'
             }
         }
     }
@@ -29,7 +30,7 @@ $sortedWarnings = $warnings | Sort-Object -Property Code
 
 # Генерируем текстовую таблицу
 $table = $sortedWarnings | ForEach-Object -Begin {$i=1} -Process {
-    "{0,-4}{1,-50}{2,-10}{3}" -f $i++,$_.File,$_.Code,$_.Message
+    "{0,-4}{1,-50}{2,-10}{3,-10}{4}" -f $i++,$_.File,$_.Severity,"$($_.Code)",$_.Message
 }
 
 # Сохраняем таблицу в выходной файл
