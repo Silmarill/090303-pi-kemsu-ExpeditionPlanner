@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Номер Pull Request для проверки (при ручном запуске)'
+        description: 'Номер Pull Request для проверки'
         required: true
         type: number
 
@@ -27,15 +27,13 @@ jobs:
           echo "PR_NUMBER=$pr" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      # 1. Получаем код студента из его PR
       - name: Получить код репозитория (ветка студента)
         uses: actions/checkout@v4
         with:
           ref: refs/pull/${{ steps.pr.outputs.number }}/head
           fetch-depth: 1
 
-      # 2. Получаем скрипты из целевой ветки (main)
-      - name: Получить скрипты из ветки main
+      - name: Получить скрипты и конфиги из ветки main
         uses: actions/checkout@v4
         with:
           ref: main
@@ -44,22 +42,55 @@ jobs:
       - name: Установить MSBuild
         uses: microsoft/setup-msbuild@v3
 
-      - name: Восстановить NuGet пакеты
-        run: nuget restore ExpeditionPlanner.slnx
-
       - name: Установить Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Установить зависимости
+      - name: Установить зависимости Python
         run: pip install regex
 
-      # Сборка проекта
-      - name: Собрать проект и сохранить вывод
-        run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
+      - name: Копировать .editorconfig
+        run: |
+          if (Test-Path "${{ github.workspace }}/main-branch/.editorconfig") {
+            Copy-Item -Path "${{ github.workspace }}/main-branch/.editorconfig" -Destination "${{ github.workspace }}/.editorconfig" -Force
+          } else {
+            Write-Host ".editorconfig не найден"
+          }
+        shell: pwsh
 
-      # Проверка IDE правил
+      - name: Копировать Settings.StyleCop.json
+        run: |
+          if (Test-Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json") {
+            Copy-Item -Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json" -Destination "${{ github.workspace }}/ExpeditionPlanner/Settings.StyleCop.json" -Force
+          } else {
+            Write-Host "Settings.StyleCop.json не найден"
+          }
+        shell: pwsh
+
+      # Используем отдельный скрипт для конвертации и добавления StyleCop
+      - name: Конвертировать проект в SDK-style и добавить StyleCop
+        run: |
+          pwsh "${{ github.workspace }}/main-branch/.github/scripts/convert_and_add_stylecop.ps1" `
+            -CsprojPath "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj" `
+            -Workspace "${{ github.workspace }}"
+        shell: pwsh
+
+      - name: Восстановить NuGet пакеты
+        run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
+
+      - name: Собрать проект и сохранить вывод
+        run: |
+          dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj 2>&1 | Tee-Object -FilePath build.log
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) {
+            Write-Host "❌ Сборка завершилась с ошибкой. Код: $exitCode"
+            Write-Host "Последние строки лога:"
+            Get-Content build.log -Tail 30
+            exit $exitCode
+          }
+        shell: pwsh
+
       - name: Проверить IDE форматирование (dotnet format)
         run: |
           dotnet tool install -g dotnet-format
@@ -67,7 +98,6 @@ jobs:
           exit 0
         shell: pwsh
 
-      # Объединение логов
       - name: Объединить логи
         run: |
           Get-Content build.log > combined.log
@@ -79,21 +109,18 @@ jobs:
           }
         shell: pwsh
 
-      # Парсинг лога в JSON (скрипты из папки main-branch)
       - name: Преобразовать лог в JSON
         run: |
           python "${{ github.workspace }}/main-branch/.github/scripts/parse_log_to_json.py" `
             --log-file "${{ github.workspace }}/combined.log" `
             --output-json "${{ github.workspace }}/warnings.json"
 
-      # Генерация человеко-читаемого отчёта (скрипты из папки main-branch)
       - name: Создать текстовый отчёт
         run: |
           python "${{ github.workspace }}/main-branch/.github/scripts/generate_report_from_json.py" `
             --json-file "${{ github.workspace }}/warnings.json" `
             --output-txt "${{ github.workspace }}/stylecop_report.txt"
 
-      # Дата и имя артефакта
       - name: Получить текущую дату и время
         id: date
         run: |
@@ -101,20 +128,19 @@ jobs:
           echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
+      # Имя артефакта: репозиторий_PR<номер>_дата_ран_номер-хэш
       - name: Сформировать имя артефакта
         id: artifact_name
         run: |
           $repoName = "${{ github.event.repository.name }}"
-          $branch = "${{ github.ref_name }}" -replace '/', '-'
-          $actor = "${{ github.actor }}"
+          $prNumber = "${{ steps.pr.outputs.number }}"
           $runNumber = "${{ github.run_number }}"
           $shaShort = "${{ github.sha }}"[0..3] -join ''
           $date = "${{ steps.date.outputs.date }}"
-          $artifactName = "${repoName}_${branch}_${actor}_${date}_${runNumber}-${shaShort}"
+          $artifactName = "${repoName}_PR${prNumber}_${date}_${runNumber}-${shaShort}"
           echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
-      # Сохранение артефактов
       - name: Сохранить артефакты
         uses: actions/upload-artifact@v4
         with:
@@ -126,7 +152,6 @@ jobs:
             warnings.json
             stylecop_report.txt
 
-      # Комментарий в PR
       - name: Проанализировать предупреждения и оставить комментарий в PR
         uses: actions/github-script@v7
         with:
