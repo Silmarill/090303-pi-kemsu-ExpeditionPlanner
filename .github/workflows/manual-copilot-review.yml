@@ -32,12 +32,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
 
-      - name: Request Copilot review
+      - name: Request Copilot review with debug
         run: |
-          if [ "${{ github.event.inputs.force }}" == "true" ]; then
-            gh copilot-review ${{ github.event.inputs.pr_number }} --force
-          else
-            gh copilot-review ${{ github.event.inputs.pr_number }}
-          fi
+          echo "=== GitHub CLI version ==="
+          gh --version
+          echo "=== Auth status ==="
+          gh auth status
+          echo "=== Copilot extension help ==="
+          gh copilot-review --help
+          echo "=== Requesting review for PR ${{ github.event.inputs.pr_number }} ==="
+          gh copilot-review ${{ github.event.inputs.pr_number }} --force --debug 2>&1
         env:
-          GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
