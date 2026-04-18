@@ -179,9 +179,14 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
 
 
 dotnet_diagnostic.CS1633.severity = none
+dotnet_diagnostic.SA1600.severity = none
 dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA1200.severity = none
 dotnet_diagnostic.SA1309.severity = none
 dotnet_diagnostic.SA1633.severity = none
 dotnet_diagnostic.SA1500.severity = none
 dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1401.severity = none
+dotnet_diagnostic.SA1413.severity = none
+
+dotnet_diagnostic.IDE0055.severity = warning

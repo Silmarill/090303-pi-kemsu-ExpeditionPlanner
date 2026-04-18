@@ -2,25 +2,24 @@
 using System.Collections.Generic;
 
 // Обратите внимание на совпадение пространств имен и папок
-using ExpeditionPlanner.Models;
 using ExpeditionPlanner.Factories;
-
-//  <TreatWarningsAsErrors>true</TreatWarningsAsErrors> в <PropertyGroup>
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   public class Program {
-    static void Main() {
+    public static void Main() {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
             new ExplorationMissionFactory(),
             new CombatMissionFactory(),
             new CargoMissionFactory()
-        };
+      };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
-      foreach (var factory in factories) {
+      foreach (var factory in factories) 
+            {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
         Mission mission = factory.CreateMission();
 
@@ -32,9 +31,9 @@ namespace ExpeditionPlanner {
 
       // Push Test Actions
       // Легко добавить новую миссию, не меняя существующий код!
-      //MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
-      //Mission diplomaticMission = newFactory.CreateMission();
-      //diplomaticMission.Execute();
+      // MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
+      // Mission diplomaticMission = newFactory.CreateMission();
+      // diplomaticMission.Execute();
     }
   }
 }
