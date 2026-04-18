@@ -16,6 +16,10 @@ on:
 jobs:
   copilot-review:
     runs-on: ubuntu-latest
+    # Добавляем переменную окружения с токеном и флагом для отладки
+    env:
+      GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
+      GH_DEBUG: api   
     permissions:
       pull-requests: write
       issues: write
@@ -27,10 +31,12 @@ jobs:
           ref: refs/pull/${{ github.event.inputs.pr_number }}/head
           fetch-depth: 1
 
+      # Убираем старый шаг Authenticate GitHub CLI и заменяем его на проверку статуса
+      - name: Check GitHub CLI auth status
+        run: gh auth status
+
       - name: Install Copilot extension
         run: gh extension install k1LoW/gh-copilot-review
-        env:
-          GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
 
       - name: Request Copilot review
         run: |
@@ -39,5 +45,3 @@ jobs:
           else
             gh copilot-review ${{ github.event.inputs.pr_number }}
           fi
-        env:
-          GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
