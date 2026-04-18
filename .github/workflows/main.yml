@@ -1,12 +1,13 @@
 name: Basic Code Quality Check
 
 on:
-  push:
-    branches:
-      - 'group4/**'
+  #push:
+  #  branches:
+     # - 'group4/**'
   pull_request:
     branches:
       - 'main'
+      - 'group4/**'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
