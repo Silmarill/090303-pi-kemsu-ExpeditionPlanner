@@ -22,15 +22,24 @@ jobs:
       - name: Restore NuGet Packages
         run: nuget restore ExpeditionPlanner.slnx
 
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          pip install regex
+
       - name: Build Project and Capture Output
         run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
 
-      - name: Parse Build Log and Generate JSON Report
+      - name: Parse Build Log and Generate Text Report
         run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          & "${{ github.workspace }}/.github/scripts/Parse-BuildLog.ps1" `
-            -LogFilePath "${{ github.workspace }}/build.log" `
-            -OutputFilePath "${{ github.workspace }}/stylecop_report.txt"
+          python "${{ github.workspace }}/.github/scripts/parse_build_log.py" \
+            --log-file "${{ github.workspace }}/build.log" \
+            --output-file "${{ github.workspace }}/stylecop_report.txt"
 
       - name: Archive Reports
         uses: actions/upload-artifact@v4
@@ -38,7 +47,7 @@ jobs:
           name: reports-${{ github.run_number }}-${{ github.sha }}
           path: |
             build.log
-            stylecop_report.json
+            stylecop_report.txt
 
       - name: Comment on Pull Request
         if: github.event_name == 'pull_request'
