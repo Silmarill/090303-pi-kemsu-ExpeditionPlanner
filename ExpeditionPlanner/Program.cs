@@ -26,7 +26,7 @@ namespace ExpeditionPlanner {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
         Mission mission = factory.CreateMission();
 
-        Console.WriteLine($"Миссия: {mission._name} (длительность: {mission.duration} дней)");
+        Console.WriteLine($"Миссия: {mission._name} (длительность: {mission.Duration} дней)");
         mission.Execute();
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();
