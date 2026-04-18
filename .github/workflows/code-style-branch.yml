@@ -70,7 +70,16 @@ jobs:
         run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
 
       - name: Собрать проект и сохранить вывод
-        run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
+        run: |
+          dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj 2>&1 | Tee-Object -FilePath build.log
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) {
+            Write-Host "❌ Сборка завершилась с ошибкой. Код: $exitCode"
+            Write-Host "Последние строки лога:"
+            Get-Content build.log -Tail 30
+            exit $exitCode
+          }
+        shell: pwsh
 
       - name: Проверить IDE форматирование (dotnet format)
         run: |
