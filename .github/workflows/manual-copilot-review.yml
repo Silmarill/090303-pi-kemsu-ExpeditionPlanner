@@ -1,210 +1,43 @@
-name: Базовый код-ревью (по ветке)
+name: Manual Copilot Review
 
 on:
   workflow_dispatch:
     inputs:
-      branch_name:
-        description: 'Имя ветки для проверки (например, group4/student1)'
+      pr_number:
+        description: 'Pull Request number to review'
         required: true
-        type: string
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        type: number
+      force:
+        description: 'Force re-review (overwrites previous Copilot comment)'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
-  build-and-test:
-    runs-on: windows-latest
+  copilot-review:
+    runs-on: ubuntu-latest
     permissions:
-      issues: write
       pull-requests: write
-
+      issues: write
+      contents: read
     steps:
-      - name: Получить код указанной ветки (студента)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch_name }}
+          ref: refs/pull/${{ github.event.inputs.pr_number }}/head
           fetch-depth: 1
 
-      - name: Получить скрипты и конфиги из ветки main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          path: main-branch
+      - name: Install Copilot extension
+        run: gh extension install k1LoW/gh-copilot-review
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
-      - name: Установить MSBuild
-        uses: microsoft/setup-msbuild@v3
-
-      - name: Установить Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Установить зависимости Python
-        run: pip install regex
-
-      - name: Копировать .editorconfig
+      - name: Request Copilot review
         run: |
-          if (Test-Path "${{ github.workspace }}/main-branch/.editorconfig") {
-            Copy-Item -Path "${{ github.workspace }}/main-branch/.editorconfig" -Destination "${{ github.workspace }}/.editorconfig" -Force
-          } else {
-            Write-Host ".editorconfig не найден"
-          }
-        shell: pwsh
-
-      - name: Копировать Settings.StyleCop.json
-        run: |
-          if (Test-Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json") {
-            Copy-Item -Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json" -Destination "${{ github.workspace }}/ExpeditionPlanner/Settings.StyleCop.json" -Force
-          } else {
-            Write-Host "Settings.StyleCop.json не найден"
-          }
-        shell: pwsh
-
-      # Конвертация старого csproj в SDK-стиль и установка StyleCop.Analyzers
-      - name: Конвертировать проект в SDK-style и добавить StyleCop
-        run: |
-          $csproj = "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj"
-          $xml = [xml](Get-Content $csproj -Encoding UTF8)
-          
-          # Проверяем, является ли проект SDK-style
-          if (-not $xml.Project.Sdk) {
-            Write-Host "Обнаружен старый формат csproj (не SDK). Конвертируем..."
-            Backup-Item $csproj -Destination "$csproj.bak" -Force
-            
-            # Собираем все ссылки на сборки (Reference)
-            $references = $xml.Project.ItemGroup.Reference | ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
-            $refBlock = if ($references) { $references -join "`n" } else { "" }
-            
-            # Собираем все файлы Compile
-            $compiles = $xml.Project.ItemGroup.Compile | ForEach-Object { "    <Compile Include=`"$($_.Include)`" />" }
-            $compileBlock = if ($compiles) { $compiles -join "`n" } else { "" }
-            
-            # Собираем все None (например, App.config)
-            $nones = $xml.Project.ItemGroup.None | ForEach-Object { "    <None Include=`"$($_.Include)`" />" }
-            $noneBlock = if ($nones) { $nones -join "`n" } else { "" }
-            
-            # Формируем новый csproj в SDK-стиле
-            $newCsproj = @"
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>ExpeditionPlanner</RootNamespace>
-    <AssemblyName>ExpeditionPlanner</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
-$refBlock
-  </ItemGroup>
-  <ItemGroup>
-$compileBlock
-  </ItemGroup>
-  <ItemGroup>
-$noneBlock
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-</Project>
-"@
-            # Сохраняем новый csproj
-            $newCsproj | Out-File -FilePath $csproj -Encoding utf8
-            Write-Host "Проект успешно конвертирован в SDK-стиль, StyleCop.Analyzers добавлен."
-          } else {
-            Write-Host "Проект уже в SDK-стиле. Добавляем StyleCop.Analyzers через PackageReference."
-            # Если уже SDK, просто добавляем PackageReference
-            $ns = $xml.DocumentElement.NamespaceURI
-            $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
-            if (-not $itemGroup) {
-              $itemGroup = $xml.CreateElement("ItemGroup", $ns)
-              $xml.Project.AppendChild($itemGroup) | Out-Null
-            }
-            $exists = $itemGroup.PackageReference | Where-Object { $_.Include -eq "StyleCop.Analyzers" }
-            if (-not $exists) {
-              $package = $xml.CreateElement("PackageReference", $ns)
-              $package.SetAttribute("Include", "StyleCop.Analyzers")
-              $package.SetAttribute("Version", "1.2.0-beta.556")
-              $itemGroup.AppendChild($package) | Out-Null
-              $xml.Save($csproj)
-              Write-Host "PackageReference добавлен."
-            }
-          }
-        shell: pwsh
-
-      # Восстановление пакетов (теперь StyleCop будет загружен)
-      - name: Восстановить NuGet пакеты
-        run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
-
-      # Сборка проекта (теперь с активным StyleCop)
-      - name: Собрать проект и сохранить вывод
-        run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
-
-      - name: Проверить IDE форматирование (dotnet format)
-        run: |
-          dotnet tool install -g dotnet-format
-          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
-          exit 0
-        shell: pwsh
-
-      - name: Объединить логи
-        run: |
-          Get-Content build.log > combined.log
-          Add-Content combined.log "`n=== Предупреждения dotnet format ===`n"
-          if (Test-Path ide_warnings.txt) {
-            Get-Content ide_warnings.txt >> combined.log
-          } else {
-            Add-Content combined.log "Файл с предупреждениями IDE не найден."
-          }
-        shell: pwsh
-
-      - name: Преобразовать лог в JSON
-        run: |
-          python "${{ github.workspace }}/main-branch/.github/scripts/parse_log_to_json.py" `
-            --log-file "${{ github.workspace }}/combined.log" `
-            --output-json "${{ github.workspace }}/warnings.json"
-
-      - name: Создать текстовый отчёт
-        run: |
-          python "${{ github.workspace }}/main-branch/.github/scripts/generate_report_from_json.py" `
-            --json-file "${{ github.workspace }}/warnings.json" `
-            --output-txt "${{ github.workspace }}/stylecop_report.txt"
-
-      - name: Получить текущую дату и время
-        id: date
-        run: |
-          $date = (Get-Date -Format "yyyy-MM-dd-HHmm")
-          echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        shell: pwsh
-
-      - name: Сформировать имя артефакта
-        id: artifact_name
-        run: |
-          $repoName = "${{ github.event.repository.name }}"
-          $branch = "${{ github.event.inputs.branch_name }}" -replace '/', '-'
-          $runNumber = "${{ github.run_number }}"
-          $shaShort = "${{ github.sha }}"[0..3] -join ''
-          $date = "${{ steps.date.outputs.date }}"
-          $artifactName = "${repoName}_${branch}_${date}_${runNumber}-${shaShort}"
-          echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        shell: pwsh
-
-      - name: Сохранить артефакты
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.artifact_name.outputs.name }}
-          path: |
-            build.log
-            ide_warnings.txt
-            combined.log
-            warnings.json
-            stylecop_report.txt
-
-      - name: Вывести статистику в лог
-        run: |
-          $json = Get-Content warnings.json -Raw | ConvertFrom-Json
-          $count = $json.Count
-          Write-Host "Найдено предупреждений/инфо: $count"
+          if [ "${{ github.event.inputs.force }}" == "true" ]; then
+            gh copilot-review ${{ github.event.inputs.pr_number }} --force
+          else
+            gh copilot-review ${{ github.event.inputs.pr_number }}
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
