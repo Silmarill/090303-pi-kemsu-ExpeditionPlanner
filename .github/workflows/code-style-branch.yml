@@ -19,14 +19,14 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Получить код указанной ветки
+      - name: Получить код указанной ветки (студента)
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch_name }}
           fetch-depth: 1
 
-      # Получить скрипты из main (если в целевой ветке их нет)
-      - name: Получить скрипты из ветки main
+      # Получить скрипты и конфиги из ветки main
+      - name: Получить скрипты и конфиги из ветки main
         uses: actions/checkout@v4
         with:
           ref: main
@@ -46,6 +46,35 @@ jobs:
       - name: Установить зависимости
         run: pip install regex
 
+      # Копируем .editorconfig в корень репозитория студента
+      - name: Копировать .editorconfig
+        run: |
+          if (Test-Path "${{ github.workspace }}/main-branch/.editorconfig") {
+            Copy-Item -Path "${{ github.workspace }}/main-branch/.editorconfig" -Destination "${{ github.workspace }}/.editorconfig" -Force
+            Write-Host ".editorconfig скопирован"
+          } else {
+            Write-Host "Файл .editorconfig не найден в корне main-branch"
+          }
+        shell: pwsh
+
+      # Копируем Settings.StyleCop.json в папку проекта
+      - name: Копировать Settings.StyleCop.json
+        run: |
+          if (Test-Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json") {
+            Copy-Item -Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json" -Destination "${{ github.workspace }}/ExpeditionPlanner/Settings.StyleCop.json" -Force
+            Write-Host "Settings.StyleCop.json скопирован"
+          } else {
+            Write-Host "Файл Settings.StyleCop.json не найден в корне main-branch"
+          }
+        shell: pwsh
+
+      # Временно устанавливаем StyleCop.Analyzers в проект студента
+      - name: Установить StyleCop.Analyzers
+        run: |
+          cd ExpeditionPlanner
+          dotnet add package StyleCop.Analyzers
+
+      # Сборка проекта (теперь с подключённым StyleCop и вашими настройками)
       - name: Собрать проект и сохранить вывод
         run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
 
@@ -91,11 +120,10 @@ jobs:
         run: |
           $repoName = "${{ github.event.repository.name }}"
           $branch = "${{ github.event.inputs.branch_name }}" -replace '/', '-'
-          $actor = "${{ github.actor }}"
           $runNumber = "${{ github.run_number }}"
           $shaShort = "${{ github.sha }}"[0..3] -join ''
           $date = "${{ steps.date.outputs.date }}"
-          $artifactName = "${repoName}_${branch}_${actor}_${date}_${runNumber}-${shaShort}"
+          $artifactName = "${repoName}_${branch}_${date}_${runNumber}-${shaShort}"
           echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
@@ -110,7 +138,6 @@ jobs:
             warnings.json
             stylecop_report.txt
 
-      # Опционально: вывести итоговое количество предупреждений в лог
       - name: Вывести статистику в лог
         run: |
           $json = Get-Content warnings.json -Raw | ConvertFrom-Json
