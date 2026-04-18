@@ -19,6 +19,7 @@ jobs:
     permissions:
       pull-requests: write
       issues: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,21 +27,24 @@ jobs:
           ref: refs/pull/${{ github.event.inputs.pr_number }}/head
           fetch-depth: 1
 
-      - name: Install GitHub CLI and extension
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.COPILOT_GITHUB_TOKEN }}" | gh auth login --with-token
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Install Copilot extension
         run: |
           gh extension install k1LoW/gh-copilot-review
         env:
-          GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
-      - name: Request Copilot review with debug
+      - name: Request Copilot review
         run: |
-          echo "=== GitHub CLI version ==="
-          gh --version
-          echo "=== Auth status ==="
-          gh auth status
-          echo "=== Copilot extension help ==="
-          gh copilot-review --help
-          echo "=== Requesting review for PR ${{ github.event.inputs.pr_number }} ==="
-          gh copilot-review ${{ github.event.inputs.pr_number }} --force --debug 2>&1
+          if [ "${{ github.event.inputs.force }}" == "true" ]; then
+            gh copilot-review ${{ github.event.inputs.pr_number }} --force
+          else
+            gh copilot-review ${{ github.event.inputs.pr_number }}
+          fi
         env:
           GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
