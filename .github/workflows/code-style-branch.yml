@@ -25,7 +25,6 @@ jobs:
           ref: ${{ github.event.inputs.branch_name }}
           fetch-depth: 1
 
-      # Получить скрипты и конфиги из ветки main
       - name: Получить скрипты и конфиги из ветки main
         uses: actions/checkout@v4
         with:
@@ -46,35 +45,43 @@ jobs:
       - name: Установить зависимости
         run: pip install regex
 
-      # Копируем .editorconfig в корень репозитория студента
       - name: Копировать .editorconfig
         run: |
           if (Test-Path "${{ github.workspace }}/main-branch/.editorconfig") {
             Copy-Item -Path "${{ github.workspace }}/main-branch/.editorconfig" -Destination "${{ github.workspace }}/.editorconfig" -Force
-            Write-Host ".editorconfig скопирован"
           } else {
-            Write-Host "Файл .editorconfig не найден в корне main-branch"
+            Write-Host ".editorconfig не найден"
           }
         shell: pwsh
 
-      # Копируем Settings.StyleCop.json в папку проекта
       - name: Копировать Settings.StyleCop.json
         run: |
           if (Test-Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json") {
             Copy-Item -Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json" -Destination "${{ github.workspace }}/ExpeditionPlanner/Settings.StyleCop.json" -Force
-            Write-Host "Settings.StyleCop.json скопирован"
           } else {
-            Write-Host "Файл Settings.StyleCop.json не найден в корне main-branch"
+            Write-Host "Settings.StyleCop.json не найден"
           }
         shell: pwsh
 
-      # Временно устанавливаем StyleCop.Analyzers в проект студента
-      - name: Установить StyleCop.Analyzers
+      # Добавляем StyleCop.Analyzers напрямую в csproj (обход CPM)
+      - name: Установить StyleCop.Analyzers в проект
         run: |
-          cd ExpeditionPlanner
-          dotnet add package StyleCop.Analyzers
+          $csproj = "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj"
+          $xml = [xml](Get-Content $csproj)
+          $ns = $xml.DocumentElement.NamespaceURI
+          $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
+          if (-not $itemGroup) {
+            $itemGroup = $xml.CreateElement("ItemGroup", $ns)
+            $xml.Project.AppendChild($itemGroup) | Out-Null
+          }
+          $package = $xml.CreateElement("PackageReference", $ns)
+          $package.SetAttribute("Include", "StyleCop.Analyzers")
+          $package.SetAttribute("Version", "1.2.0-beta.556")
+          $itemGroup.AppendChild($package) | Out-Null
+          $xml.Save($csproj)
+          Write-Host "StyleCop.Analyzers успешно добавлен"
+        shell: pwsh
 
-      # Сборка проекта (теперь с подключённым StyleCop и вашими настройками)
       - name: Собрать проект и сохранить вывод
         run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
 
