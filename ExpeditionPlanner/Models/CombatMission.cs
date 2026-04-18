@@ -4,7 +4,7 @@ namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
     public CombatMission() {
       _name = "Боевая миссия";
-      duration = 15;
+      this.duration = 15;
     }
 
     public override void Execute() {
