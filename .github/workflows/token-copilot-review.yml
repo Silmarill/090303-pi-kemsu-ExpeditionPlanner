@@ -27,21 +27,12 @@ jobs:
           ref: refs/pull/${{ github.event.inputs.pr_number }}/head
           fetch-depth: 1
 
-      - name: Authenticate GitHub CLI
+      - name: Authenticate GitHub CLI with token
         run: |
           echo "${{ secrets.COPILOT_GITHUB_TOKEN }}" | gh auth login --with-token
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-
-      - name: Verify authentication
-        run: gh auth status
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Install Copilot extension
         run: gh extension install k1LoW/gh-copilot-review
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Request Copilot review
         run: |
@@ -50,5 +41,3 @@ jobs:
           else
             gh copilot-review ${{ github.event.inputs.pr_number }}
           fi
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
