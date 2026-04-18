@@ -4,7 +4,13 @@ import argparse
 
 def extract_url(text):
     match = re.search(r'https?://\S+', text)
-    return match.group(0) if match else None
+    if match:
+        url = match.group(0)
+        # Убираем завершающую скобку, если есть
+        if url.endswith(')'):
+            url = url[:-1]
+        return url
+    return None
 
 def parse_build_log_to_json(input_path, output_json):
     with open(input_path, 'r', encoding='utf-8') as f:

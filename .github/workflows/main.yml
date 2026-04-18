@@ -41,7 +41,7 @@ jobs:
 
       - name: Generate Human-Readable Report (Step 2)
         run: |
-          python "${{ github.workspace }}/.github/scripts/generate_report_from_json.py" "--json-file" "${{ github.workspace }}/warnings.json" "--output-txt" "${{ github.workspace }}/stylecop_report.txt" "--repo-root" "${{ github.workspace }}"
+          python "${{ github.workspace }}/.github/scripts/generate_report_from_json.py" --json-file "${{ github.workspace }}/warnings.json" --output-txt "${{ github.workspace }}/stylecop_report.txt"
 
       - name: Archive Reports
         uses: actions/upload-artifact@v4
