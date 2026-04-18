@@ -50,7 +50,7 @@ def generate_report(json_path, output_txt):
         lines.append("")  # первая пустая строка после заголовка
 
         # Заголовок таблицы
-        lines.append(f"{'#':<4} {'File':<50} {'Line':<6} {'Column'}")
+        lines.append(f"{'#':<4} {'File':<50}   {'Line':<6} {'Column'}")
         lines.append("-" * 70)
 
         # Сортировка внутри группы
@@ -60,11 +60,9 @@ def generate_report(json_path, output_txt):
             # Только путь, без (строка,столбец) в конце
             display_path = w["full_path"]
             short_path = truncate_path(display_path, 50)
-
             line_str = str(w["line"]) if w["line"] is not None else ""
             col_str = str(w["column"]) if w["column"] is not None else ""
-
-            lines.append(f"{idx:<4} {short_path:<50} {line_str:<6} {col_str}")
+            lines.append(f"{idx:<4} {short_path:<50}   {line_str:<6} {col_str}")
 
         # Две пустые строки между разделами (последний раздел не требует дополнительной)
         lines.append("")
