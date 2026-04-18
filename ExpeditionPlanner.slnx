@@ -4,6 +4,8 @@
     <File Path=".github/scripts/generate_report_from_json.py" />
     <File Path=".github/scripts/parse_log_to_json.py" />
     <File Path=".github/workflows/main.yml" />
+    <File Path=".github/workflows/manual-copilot-review.yml" />
+    <File Path=".github/copilot-instructions.md" />
     <File Path=".gitignore" />
     <File Path="LICENSE" />
     <File Path="README.md" />
