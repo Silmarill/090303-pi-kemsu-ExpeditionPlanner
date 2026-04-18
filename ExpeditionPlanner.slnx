@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/Элементы решения/">
     <File Path=".editorconfig" />
+    <File Path=".github/scripts/generate_report_from_json.py" />
     <File Path=".github/scripts/Parse-BuildLog.ps1" />
     <File Path=".github/scripts/parse_build_log.py" />
+    <File Path=".github/scripts/parse_log_to_json.py" />
     <File Path=".github/workflows/main.yml" />
     <File Path=".gitignore" />
     <File Path="LICENSE" />
