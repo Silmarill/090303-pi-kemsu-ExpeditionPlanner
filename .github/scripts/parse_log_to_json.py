@@ -1,15 +1,16 @@
 import re
 import json
 import argparse
-from pathlib import Path
+
+def extract_url(text):
+    match = re.search(r'https?://\S+', text)
+    return match.group(0) if match else None
 
 def parse_build_log_to_json(input_path, output_json):
     with open(input_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
-    # Шаблон для строк с позицией: path(line,col): severity CODE: message
     pattern = r'^(.+?)\((\d+),(\d+)\):\s+(warning|error)\s+([A-Za-z0-9]+):\s+(.*?)(?:\s+\[.*\])?$'
-    # Шаблон для строк без позиции (например, CSC : warning SA0001)
     alt_pattern = r'^(\S+)\s+:\s+(warning|error)\s+(\S+):\s+(.*)$'
 
     warnings = []
@@ -27,10 +28,7 @@ def parse_build_log_to_json(input_path, output_json):
             severity = match.group(4)
             code = match.group(5)
             message = match.group(6).strip()
-            # Убираем URL из сообщения, если есть
-            if 'http' in message:
-                message = message.split(' (http')[0].strip()
-
+            url = extract_url(message)
             warnings.append({
                 "full_path": full_path,
                 "line": line_num,
@@ -38,6 +36,7 @@ def parse_build_log_to_json(input_path, output_json):
                 "severity": severity,
                 "code": code,
                 "message": message,
+                "url": url,
                 "raw_line": line
             })
         else:
@@ -47,6 +46,7 @@ def parse_build_log_to_json(input_path, output_json):
                 severity = alt_match.group(2)
                 code = alt_match.group(3)
                 message = alt_match.group(4).strip()
+                url = extract_url(message)
                 warnings.append({
                     "full_path": source,
                     "line": None,
@@ -54,6 +54,7 @@ def parse_build_log_to_json(input_path, output_json):
                     "severity": severity,
                     "code": code,
                     "message": message,
+                    "url": url,
                     "raw_line": line
                 })
 
