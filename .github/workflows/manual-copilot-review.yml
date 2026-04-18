@@ -1,50 +1,202 @@
-name: Manual Copilot Review
+name: Базовый код-ревью (по ветке)
 
 on:
   workflow_dispatch:
     inputs:
-      pr_number:
-        description: 'Pull Request number to review'
+      branch_name:
+        description: 'Имя ветки для проверки (например, group4/student1)'
         required: true
-        type: number
-      force:
-        description: 'Force re-review (overwrites previous Copilot comment)'
-        required: false
-        default: true
-        type: boolean
+        type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  copilot-review:
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: windows-latest
     permissions:
-      pull-requests: write
       issues: write
-      contents: read
+      pull-requests: write
+
     steps:
-      - name: Checkout repository
+      - name: Получить код указанной ветки (студента)
         uses: actions/checkout@v4
         with:
-          ref: refs/pull/${{ github.event.inputs.pr_number }}/head
+          ref: ${{ github.event.inputs.branch_name }}
           fetch-depth: 1
 
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ secrets.COPILOT_GITHUB_TOKEN }}" | gh auth login --with-token
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      - name: Получить скрипты и конфиги из ветки main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
 
-      - name: Install Copilot extension
-        run: |
-          gh extension install k1LoW/gh-copilot-review
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      - name: Установить MSBuild
+        uses: microsoft/setup-msbuild@v3
 
-      - name: Request Copilot review
+      - name: Установить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Установить зависимости Python
+        run: pip install regex
+
+      - name: Копировать .editorconfig
         run: |
-          if [ "${{ github.event.inputs.force }}" == "true" ]; then
-            gh copilot-review ${{ github.event.inputs.pr_number }} --force
-          else
-            gh copilot-review ${{ github.event.inputs.pr_number }}
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          if (Test-Path "${{ github.workspace }}/main-branch/.editorconfig") {
+            Copy-Item -Path "${{ github.workspace }}/main-branch/.editorconfig" -Destination "${{ github.workspace }}/.editorconfig" -Force
+          } else {
+            Write-Host ".editorconfig не найден"
+          }
+        shell: pwsh
+
+      - name: Копировать Settings.StyleCop.json
+        run: |
+          if (Test-Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json") {
+            Copy-Item -Path "${{ github.workspace }}/main-branch/Settings.StyleCop.json" -Destination "${{ github.workspace }}/ExpeditionPlanner/Settings.StyleCop.json" -Force
+          } else {
+            Write-Host "Settings.StyleCop.json не найден"
+          }
+        shell: pwsh
+
+      # Универсальная установка StyleCop.Analyzers (поддерживает CPM)
+      - name: Установить StyleCop.Analyzers в проект
+        run: |
+          $csproj = "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj"
+          $props = "${{ github.workspace }}/Directory.Packages.props"
+          $packageId = "StyleCop.Analyzers"
+          $version = "1.2.0-beta.556"
+
+          if (Test-Path $props) {
+            # Central Package Management
+            Write-Host "Обнаружен Directory.Packages.props, добавляем PackageVersion"
+            $xml = [xml](Get-Content $props)
+            $ns = $xml.DocumentElement.NamespaceURI
+            $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageVersion -and $_.PackageVersion.Count -gt 0 }
+            if (-not $itemGroup) {
+              $itemGroup = $xml.CreateElement("ItemGroup", $ns)
+              $xml.Project.AppendChild($itemGroup) | Out-Null
+            }
+            $exists = $itemGroup.PackageVersion | Where-Object { $_.Include -eq $packageId }
+            if (-not $exists) {
+              $pkg = $xml.CreateElement("PackageVersion", $ns)
+              $pkg.SetAttribute("Include", $packageId)
+              $pkg.SetAttribute("Version", $version)
+              $itemGroup.AppendChild($pkg) | Out-Null
+              $xml.Save($props)
+              Write-Host "PackageVersion для $packageId добавлен в Directory.Packages.props"
+            } else {
+              Write-Host "PackageVersion для $packageId уже существует"
+            }
+            # Добавляем PackageReference в csproj (без версии)
+            $xml2 = [xml](Get-Content $csproj)
+            $ns2 = $xml2.DocumentElement.NamespaceURI
+            $ig = $xml2.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
+            if (-not $ig) {
+              $ig = $xml2.CreateElement("ItemGroup", $ns2)
+              $xml2.Project.AppendChild($ig) | Out-Null
+            }
+            $refExists = $ig.PackageReference | Where-Object { $_.Include -eq $packageId }
+            if (-not $refExists) {
+              $ref = $xml2.CreateElement("PackageReference", $ns2)
+              $ref.SetAttribute("Include", $packageId)
+              $ig.AppendChild($ref) | Out-Null
+              $xml2.Save($csproj)
+              Write-Host "PackageReference для $packageId добавлен в csproj"
+            }
+          } else {
+            # Обычный проект без CPM
+            Write-Host "Central Package Management не используется, добавляем PackageReference с версией"
+            $xml = [xml](Get-Content $csproj)
+            $ns = $xml.DocumentElement.NamespaceURI
+            $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
+            if (-not $itemGroup) {
+              $itemGroup = $xml.CreateElement("ItemGroup", $ns)
+              $xml.Project.AppendChild($itemGroup) | Out-Null
+            }
+            $exists = $itemGroup.PackageReference | Where-Object { $_.Include -eq $packageId }
+            if (-not $exists) {
+              $package = $xml.CreateElement("PackageReference", $ns)
+              $package.SetAttribute("Include", $packageId)
+              $package.SetAttribute("Version", $version)
+              $itemGroup.AppendChild($package) | Out-Null
+              $xml.Save($csproj)
+              Write-Host "PackageReference для $packageId добавлен в csproj"
+            }
+          }
+        shell: pwsh
+
+      # Восстанавливаем пакеты (теперь StyleCop будет загружен)
+      - name: Восстановить NuGet пакеты
+        run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
+
+      # Сборка проекта (теперь с активным StyleCop)
+      - name: Собрать проект и сохранить вывод
+        run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
+
+      - name: Проверить IDE форматирование (dotnet format)
+        run: |
+          dotnet tool install -g dotnet-format
+          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
+          exit 0
+        shell: pwsh
+
+      - name: Объединить логи
+        run: |
+          Get-Content build.log > combined.log
+          Add-Content combined.log "`n=== Предупреждения dotnet format ===`n"
+          if (Test-Path ide_warnings.txt) {
+            Get-Content ide_warnings.txt >> combined.log
+          } else {
+            Add-Content combined.log "Файл с предупреждениями IDE не найден."
+          }
+        shell: pwsh
+
+      - name: Преобразовать лог в JSON
+        run: |
+          python "${{ github.workspace }}/main-branch/.github/scripts/parse_log_to_json.py" `
+            --log-file "${{ github.workspace }}/combined.log" `
+            --output-json "${{ github.workspace }}/warnings.json"
+
+      - name: Создать текстовый отчёт
+        run: |
+          python "${{ github.workspace }}/main-branch/.github/scripts/generate_report_from_json.py" `
+            --json-file "${{ github.workspace }}/warnings.json" `
+            --output-txt "${{ github.workspace }}/stylecop_report.txt"
+
+      - name: Получить текущую дату и время
+        id: date
+        run: |
+          $date = (Get-Date -Format "yyyy-MM-dd-HHmm")
+          echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Сформировать имя артефакта
+        id: artifact_name
+        run: |
+          $repoName = "${{ github.event.repository.name }}"
+          $branch = "${{ github.event.inputs.branch_name }}" -replace '/', '-'
+          $runNumber = "${{ github.run_number }}"
+          $shaShort = "${{ github.sha }}"[0..3] -join ''
+          $date = "${{ steps.date.outputs.date }}"
+          $artifactName = "${repoName}_${branch}_${date}_${runNumber}-${shaShort}"
+          echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Сохранить артефакты
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact_name.outputs.name }}
+          path: |
+            build.log
+            ide_warnings.txt
+            combined.log
+            warnings.json
+            stylecop_report.txt
+
+      - name: Вывести статистику в лог
+        run: |
+          $json = Get-Content warnings.json -Raw | ConvertFrom-Json
+          $count = $json.Count
+          Write-Host "Найдено предупреждений/инфо: $count"
