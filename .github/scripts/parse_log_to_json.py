@@ -17,11 +17,11 @@ def parse_build_log_to_json(input_path, output_json):
 
     # Паттерн для строк с координатами (например: file.cs(10,5): warning SA1234: message)
     pattern_with_coords = re.compile(
-        r'^(.+?)\((\d+),(\d+)\):\s+(warning|error)\s+([A-Za-z0-9]+):\s+(.*?)(?:\s+\[.*\])?$'
+        r'^(.+?)\((\d+),(\d+)\):\s+(warning|error|info)\s+([A-Za-z0-9]+):\s+(.*?)(?:\s+\[.*\])?$'
     )
     # Альтернативный паттерн для строк без координат (например: source : warning CODE: message)
     pattern_alt = re.compile(
-        r'^(\S+)\s+:\s+(warning|error)\s+(\S+):\s+(.*)$'
+        r'^(\S+)\s+:\s+(warning|error|info)\s+(\S+):\s+(.*)$'
     )
 
     unique_warnings = {}
