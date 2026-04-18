@@ -227,3 +227,13 @@ SA1210 (активно, см. раздел 3) → конфликтует с usin
     <None Include="packages.config" />
     <AdditionalFiles Include="..\Settings.StyleCop.json" Link="Settings.StyleCop.json" />
   </ItemGroup>
+
+
+  dotnet_analyzer_diagnostic.category-Style.severity = warning
+
+  <PropertyGroup>
+  <!-- Включить анализ стиля кода (правила IDExxxx) во время сборки -->
+  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  <!-- Использовать последний рекомендованный набор правил -->
+  <AnalysisLevel>latest-Recommended</AnalysisLevel>
+</PropertyGroup>
