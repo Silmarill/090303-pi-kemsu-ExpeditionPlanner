@@ -43,10 +43,30 @@ jobs:
         run: |
           python "${{ github.workspace }}/.github/scripts/generate_report_from_json.py" --json-file "${{ github.workspace }}/warnings.json" --output-txt "${{ github.workspace }}/stylecop_report.txt"
 
+      - name: Get current date and time
+        id: date
+        run: |
+          $date = (Get-Date -Format "yyyy-MM-dd_HHmm")
+          echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Prepare artifact name
+        id: artifact_name
+        run: |
+          $repoName = "${{ github.event.repository.name }}"
+          $branch = "${{ github.ref_name }}" -replace '/', '_'
+          $actor = "${{ github.actor }}"
+          $runNumber = "${{ github.run_number }}"
+          $shaShort = "${{ github.sha }}"[0..6] -join ''
+          $date = "${{ steps.date.outputs.date }}"
+          $artifactName = "${repoName}_${branch}_${actor}_${date}_${runNumber}_${shaShort}"
+          echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: pwsh
+
       - name: Archive Reports
         uses: actions/upload-artifact@v4
         with:
-          name: reports-${{ github.run_number }}-${{ github.sha }}
+          name: ${{ steps.artifact_name.outputs.name }}
           path: |
             build.log
             warnings.json
@@ -60,7 +80,6 @@ jobs:
             const fs = require('fs');
             const reportPath = '${{ github.workspace }}/stylecop_report.txt';
             let reportContent = fs.readFileSync(reportPath, 'utf8');
-            // Обрезаем слишком длинный комментарий (максимум 65536 символов)
             if (reportContent.length > 60000) {
               reportContent = reportContent.substring(0, 60000) + '\n... (truncated)';
             }
@@ -69,4 +88,4 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `## StyleCop Analysis Report\n\`\`\`\n${reportContent}\n\`\`\``
-            });
+            }););
