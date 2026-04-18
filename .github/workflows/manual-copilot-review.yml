@@ -30,7 +30,7 @@ jobs:
       - name: Install Copilot extension
         run: gh extension install k1LoW/gh-copilot-review
         env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
 
       - name: Request Copilot review
         run: |
