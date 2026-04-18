@@ -8,7 +8,6 @@ indentationSize = 2               → пункт 20: два пробела на 
 useTabs = false                   → пункт 20: запрещена табуляция.
 SA1027 (Error)                    → пункт 20: табуляция запрещена (ошибка сборки).
 newlineAtEndOfFile = "require"    → в конце файла обязателен перевод строки (часть пункта 20).
-SA1500 (Warning)                  → пункт 22: открывающая скобка на той же строке.
 SA1005 (Warning)                  → пункт 30: пробел после // в однострочном комментарии.
 SA1028 (Warning)                  → пункт 31: запрет пробелов и табуляции в конце строк.
 SA1137 (Warning)                  → пункт 32: одинаковый отступ элементов внутри блока.
@@ -221,3 +220,10 @@ SA1210 (активно, см. раздел 3) → конфликтует с usin
 - Для выполнения пункта 26 (компиляция без предупреждений) в .csproj необходимо добавить:
   <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 - Рекомендуется добавить в ruleActions отключение правил SA1413, SA1308, SA1210 для устранения конфликтов и лишних предупреждений.
+- Часть ворнингов выключено в .editorconfig
+
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+    <AdditionalFiles Include="..\Settings.StyleCop.json" Link="Settings.StyleCop.json" />
+  </ItemGroup>

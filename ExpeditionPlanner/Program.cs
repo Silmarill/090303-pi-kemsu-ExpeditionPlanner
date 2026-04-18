@@ -21,8 +21,7 @@ namespace ExpeditionPlanner {
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
-      foreach (var factory in factories)
-        {
+      foreach (var factory in factories) {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
         Mission mission = factory.CreateMission();
 
