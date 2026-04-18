@@ -7,7 +7,6 @@ using ExpeditionPlanner.Factories;
 
 //  <TreatWarningsAsErrors>true</TreatWarningsAsErrors> в <PropertyGroup>
 
-
 namespace ExpeditionPlanner {
   public class Program {
     static void Main() {
