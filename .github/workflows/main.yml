@@ -45,16 +45,20 @@ jobs:
       - name: Check IDE formatting (dotnet format)
         run: |
           dotnet tool install -g dotnet-format
-          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj --verify-no-changes --severity info 2>&1 | Out-File -FilePath ide_warnings.txt
+          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj --verify-no-changes --include-ide --severity info > ide_warnings.txt 2>&1
+          exit 0
         shell: pwsh
-        continue-on-error: true   # не останавливаем пайплайн, но сохраняем вывод
 
       # 3. Объединение двух логов в один (build.log + ide_warnings.txt)
       - name: Merge logs
         run: |
           Get-Content build.log > combined.log
           Add-Content combined.log "`n=== dotnet format warnings ===`n"
-          Get-Content ide_warnings.txt >> combined.log
+          if (Test-Path ide_warnings.txt) {
+            Get-Content ide_warnings.txt >> combined.log
+          } else {
+            Add-Content combined.log "No IDE warnings file found."
+          }
         shell: pwsh
 
       # 4. Парсинг объединённого лога в JSON
