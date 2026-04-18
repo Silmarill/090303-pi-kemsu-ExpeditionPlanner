@@ -15,10 +15,11 @@ def parse_build_log_to_json(input_path, output_json):
     with open(input_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
-    # Паттерны
+    # Паттерн для строк с координатами (например: file.cs(10,5): warning SA1234: message)
     pattern_with_coords = re.compile(
         r'^(.+?)\((\d+),(\d+)\):\s+(warning|error)\s+([A-Za-z0-9]+):\s+(.*?)(?:\s+\[.*\])?$'
     )
+    # Альтернативный паттерн для строк без координат (например: source : warning CODE: message)
     pattern_alt = re.compile(
         r'^(\S+)\s+:\s+(warning|error)\s+(\S+):\s+(.*)$'
     )
@@ -30,7 +31,6 @@ def parse_build_log_to_json(input_path, output_json):
         if not line:
             continue
 
-        # 1. Пробуем формат с координатами (SAxxxx, IDEyyyy)
         match = pattern_with_coords.match(line)
         if match:
             full_path = match.group(1)
@@ -54,7 +54,6 @@ def parse_build_log_to_json(input_path, output_json):
                 }
             continue
 
-        # 2. Пробуем альтернативный формат (без координат)
         match = pattern_alt.match(line)
         if match:
             source = match.group(1)
@@ -74,9 +73,7 @@ def parse_build_log_to_json(input_path, output_json):
                     "url": url,
                     "raw_line": line
                 }
-            continue
-
-        # Если ни один паттерн не подошёл – игнорируем строку
+            # continue не нужен, так как это последний паттерн
 
     warnings_list = list(unique_warnings.values())
     with open(output_json, 'w', encoding='utf-8') as f:
