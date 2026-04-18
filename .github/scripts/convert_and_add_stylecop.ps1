@@ -16,7 +16,7 @@ if (-not $xml.Project.Sdk) {
         ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
     $refBlock = if ($references) { $references -join "`n" } else { "" }
 
-    # Собираем все файлы Compile (обычно всегда есть Include)
+    # Собираем все файлы Compile (явно перечисляем, отключая авто-включение)
     $compiles = $xml.Project.ItemGroup.Compile | 
         Where-Object { $_.Include -and $_.Include.Trim() -ne "" } | 
         ForEach-Object { "    <Compile Include=`"$($_.Include)`" />" }
@@ -37,6 +37,8 @@ if (-not $xml.Project.Sdk) {
     <AssemblyName>ExpeditionPlanner</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
   <ItemGroup>
 $refBlock
