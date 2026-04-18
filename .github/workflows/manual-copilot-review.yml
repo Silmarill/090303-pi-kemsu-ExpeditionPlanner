@@ -60,74 +60,82 @@ jobs:
           }
         shell: pwsh
 
-      # Универсальная установка StyleCop.Analyzers (поддерживает CPM)
-      - name: Установить StyleCop.Analyzers в проект
+      # Конвертация старого csproj в SDK-стиль и установка StyleCop.Analyzers
+      - name: Конвертировать проект в SDK-style и добавить StyleCop
         run: |
           $csproj = "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj"
-          $props = "${{ github.workspace }}/Directory.Packages.props"
-          $packageId = "StyleCop.Analyzers"
-          $version = "1.2.0-beta.556"
-
-          if (Test-Path $props) {
-            # Central Package Management
-            Write-Host "Обнаружен Directory.Packages.props, добавляем PackageVersion"
-            $xml = [xml](Get-Content $props)
-            $ns = $xml.DocumentElement.NamespaceURI
-            $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageVersion -and $_.PackageVersion.Count -gt 0 }
-            if (-not $itemGroup) {
-              $itemGroup = $xml.CreateElement("ItemGroup", $ns)
-              $xml.Project.AppendChild($itemGroup) | Out-Null
-            }
-            $exists = $itemGroup.PackageVersion | Where-Object { $_.Include -eq $packageId }
-            if (-not $exists) {
-              $pkg = $xml.CreateElement("PackageVersion", $ns)
-              $pkg.SetAttribute("Include", $packageId)
-              $pkg.SetAttribute("Version", $version)
-              $itemGroup.AppendChild($pkg) | Out-Null
-              $xml.Save($props)
-              Write-Host "PackageVersion для $packageId добавлен в Directory.Packages.props"
-            } else {
-              Write-Host "PackageVersion для $packageId уже существует"
-            }
-            # Добавляем PackageReference в csproj (без версии)
-            $xml2 = [xml](Get-Content $csproj)
-            $ns2 = $xml2.DocumentElement.NamespaceURI
-            $ig = $xml2.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
-            if (-not $ig) {
-              $ig = $xml2.CreateElement("ItemGroup", $ns2)
-              $xml2.Project.AppendChild($ig) | Out-Null
-            }
-            $refExists = $ig.PackageReference | Where-Object { $_.Include -eq $packageId }
-            if (-not $refExists) {
-              $ref = $xml2.CreateElement("PackageReference", $ns2)
-              $ref.SetAttribute("Include", $packageId)
-              $ig.AppendChild($ref) | Out-Null
-              $xml2.Save($csproj)
-              Write-Host "PackageReference для $packageId добавлен в csproj"
-            }
+          $xml = [xml](Get-Content $csproj -Encoding UTF8)
+          
+          # Проверяем, является ли проект SDK-style
+          if (-not $xml.Project.Sdk) {
+            Write-Host "Обнаружен старый формат csproj (не SDK). Конвертируем..."
+            Backup-Item $csproj -Destination "$csproj.bak" -Force
+            
+            # Собираем все ссылки на сборки (Reference)
+            $references = $xml.Project.ItemGroup.Reference | ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
+            $refBlock = if ($references) { $references -join "`n" } else { "" }
+            
+            # Собираем все файлы Compile
+            $compiles = $xml.Project.ItemGroup.Compile | ForEach-Object { "    <Compile Include=`"$($_.Include)`" />" }
+            $compileBlock = if ($compiles) { $compiles -join "`n" } else { "" }
+            
+            # Собираем все None (например, App.config)
+            $nones = $xml.Project.ItemGroup.None | ForEach-Object { "    <None Include=`"$($_.Include)`" />" }
+            $noneBlock = if ($nones) { $nones -join "`n" } else { "" }
+            
+            # Формируем новый csproj в SDK-стиле
+            $newCsproj = @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ExpeditionPlanner</RootNamespace>
+    <AssemblyName>ExpeditionPlanner</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+$refBlock
+  </ItemGroup>
+  <ItemGroup>
+$compileBlock
+  </ItemGroup>
+  <ItemGroup>
+$noneBlock
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
+"@
+            # Сохраняем новый csproj
+            $newCsproj | Out-File -FilePath $csproj -Encoding utf8
+            Write-Host "Проект успешно конвертирован в SDK-стиль, StyleCop.Analyzers добавлен."
           } else {
-            # Обычный проект без CPM
-            Write-Host "Central Package Management не используется, добавляем PackageReference с версией"
-            $xml = [xml](Get-Content $csproj)
+            Write-Host "Проект уже в SDK-стиле. Добавляем StyleCop.Analyzers через PackageReference."
+            # Если уже SDK, просто добавляем PackageReference
             $ns = $xml.DocumentElement.NamespaceURI
             $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
             if (-not $itemGroup) {
               $itemGroup = $xml.CreateElement("ItemGroup", $ns)
               $xml.Project.AppendChild($itemGroup) | Out-Null
             }
-            $exists = $itemGroup.PackageReference | Where-Object { $_.Include -eq $packageId }
+            $exists = $itemGroup.PackageReference | Where-Object { $_.Include -eq "StyleCop.Analyzers" }
             if (-not $exists) {
               $package = $xml.CreateElement("PackageReference", $ns)
-              $package.SetAttribute("Include", $packageId)
-              $package.SetAttribute("Version", $version)
+              $package.SetAttribute("Include", "StyleCop.Analyzers")
+              $package.SetAttribute("Version", "1.2.0-beta.556")
               $itemGroup.AppendChild($package) | Out-Null
               $xml.Save($csproj)
-              Write-Host "PackageReference для $packageId добавлен в csproj"
+              Write-Host "PackageReference добавлен."
             }
           }
         shell: pwsh
 
-      # Восстанавливаем пакеты (теперь StyleCop будет загружен)
+      # Восстановление пакетов (теперь StyleCop будет загружен)
       - name: Восстановить NuGet пакеты
         run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
 
