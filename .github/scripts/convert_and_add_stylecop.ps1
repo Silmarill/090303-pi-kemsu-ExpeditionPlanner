@@ -10,13 +10,22 @@ if (-not $xml.Project.Sdk) {
     Write-Host "Обнаружен старый формат csproj (не SDK). Конвертируем..."
     Copy-Item $csproj -Destination "$csproj.bak" -Force
 
-    $references = $xml.Project.ItemGroup.Reference | ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
+    # Собираем ссылки на сборки (Reference) – только те, у которых есть непустой Include
+    $references = $xml.Project.ItemGroup.Reference | 
+        Where-Object { $_.Include -and $_.Include.Trim() -ne "" } | 
+        ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
     $refBlock = if ($references) { $references -join "`n" } else { "" }
 
-    $compiles = $xml.Project.ItemGroup.Compile | ForEach-Object { "    <Compile Include=`"$($_.Include)`" />" }
+    # Собираем все файлы Compile (обычно всегда есть Include)
+    $compiles = $xml.Project.ItemGroup.Compile | 
+        Where-Object { $_.Include -and $_.Include.Trim() -ne "" } | 
+        ForEach-Object { "    <Compile Include=`"$($_.Include)`" />" }
     $compileBlock = if ($compiles) { $compiles -join "`n" } else { "" }
 
-    $nones = $xml.Project.ItemGroup.None | ForEach-Object { "    <None Include=`"$($_.Include)`" />" }
+    # Собираем все None (например, App.config)
+    $nones = $xml.Project.ItemGroup.None | 
+        Where-Object { $_.Include -and $_.Include.Trim() -ne "" } | 
+        ForEach-Object { "    <None Include=`"$($_.Include)`" />" }
     $noneBlock = if ($nones) { $nones -join "`n" } else { "" }
 
     $newCsproj = @"
