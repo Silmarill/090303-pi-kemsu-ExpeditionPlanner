@@ -35,9 +35,9 @@ jobs:
       - name: Request Copilot review
         run: |
           if [ "${{ github.event.inputs.force }}" == "true" ]; then
-            gh copilot-review --pr ${{ github.event.inputs.pr_number }} --force
+            gh copilot-review ${{ github.event.inputs.pr_number }} --force
           else
-            gh copilot-review --pr ${{ github.event.inputs.pr_number }}
+            gh copilot-review ${{ github.event.inputs.pr_number }}
           fi
         env:
           GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
