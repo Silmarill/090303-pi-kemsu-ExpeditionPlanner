@@ -1,12 +1,13 @@
 name: Basic Code Quality Check
 
 on:
-  push:
-    branches:
-      - 'group4/**'
+  #push:
+  #  branches:
+     # - 'group4/**'
   pull_request:
     branches:
       - 'main'
+      - 'group4/**'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,6 +15,9 @@ env:
 jobs:
   build-and-test:
     runs-on: windows-latest
+    permissions:
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout Repository
@@ -31,20 +35,47 @@ jobs:
           python-version: '3.x'
 
       - name: Install Dependencies
-        run: |
-          pip install regex
+        run: pip install regex
 
+      # 1. Обычная сборка (лог содержит предупреждения компиляции и StyleCop)
       - name: Build Project and Capture Output
         run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
 
-      - name: Parse Log to JSON (Step 1)
+      # 2. Проверка IDE-правил (dotnet format) – отдельный лог
+      - name: Check IDE formatting (dotnet format)
         run: |
-          python "${{ github.workspace }}/.github/scripts/parse_log_to_json.py" "--log-file" "${{ github.workspace }}/build.log" "--output-json" "${{ github.workspace }}/warnings.json"
+          dotnet tool install -g dotnet-format
+          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
+          exit 0
+        shell: pwsh
 
-      - name: Generate Human-Readable Report (Step 2)
+      # 3. Объединение двух логов в один (build.log + ide_warnings.txt)
+      - name: Merge logs
         run: |
-          python "${{ github.workspace }}/.github/scripts/generate_report_from_json.py" --json-file "${{ github.workspace }}/warnings.json" --output-txt "${{ github.workspace }}/stylecop_report.txt"
+          Get-Content build.log > combined.log
+          Add-Content combined.log "`n=== dotnet format warnings ===`n"
+          if (Test-Path ide_warnings.txt) {
+            Get-Content ide_warnings.txt >> combined.log
+          } else {
+            Add-Content combined.log "No IDE warnings file found."
+          }
+        shell: pwsh
 
+      # 4. Парсинг объединённого лога в JSON
+      - name: Parse Log to JSON
+        run: |
+          python "${{ github.workspace }}/.github/scripts/parse_log_to_json.py" `
+            --log-file "${{ github.workspace }}/combined.log" `
+            --output-json "${{ github.workspace }}/warnings.json"
+
+      # 5. Генерация человеко-читаемого отчёта
+      - name: Generate Human-Readable Report
+        run: |
+          python "${{ github.workspace }}/.github/scripts/generate_report_from_json.py" `
+            --json-file "${{ github.workspace }}/warnings.json" `
+            --output-txt "${{ github.workspace }}/stylecop_report.txt"
+
+      # 6. Дата и имя артефакта (без изменений)
       - name: Get current date and time
         id: date
         run: |
@@ -65,29 +96,66 @@ jobs:
           echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
+      # 7. Архивация всех отчётов
       - name: Archive Reports
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact_name.outputs.name }}
           path: |
             build.log
+            ide_warnings.txt
+            combined.log
             warnings.json
             stylecop_report.txt
 
-      - name: Comment on Pull Request
+      # 8. Комментарий в PR (без изменений, но теперь warnings.json включает IDE-предупреждения)
+      - name: Analyze warnings and comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const reportPath = '${{ github.workspace }}/stylecop_report.txt';
-            let reportContent = fs.readFileSync(reportPath, 'utf8');
-            if (reportContent.length > 60000) {
-              reportContent = reportContent.substring(0, 60000) + '\n... (truncated)';
+            const warningsPath = process.env.GITHUB_WORKSPACE + '/warnings.json';
+            let warningCount = 0;
+
+            if (fs.existsSync(warningsPath)) {
+              try {
+                const data = JSON.parse(fs.readFileSync(warningsPath, 'utf8'));
+                if (Array.isArray(data)) {
+                  warningCount = data.length;
+                } else if (data.warnings && Array.isArray(data.warnings)) {
+                  warningCount = data.warnings.length;
+                } else {
+                  warningCount = Object.keys(data).length;
+                }
+              } catch (e) {
+                console.log('JSON parse error:', e.message);
+                warningCount = -1;
+              }
             }
+
+            let message = '';
+            if (warningCount === 0) {
+              message = '✅ All automatic code review checks passed successfully.';
+            } else if (warningCount > 0 && warningCount <= 5) {
+              message = '👍 Overall decent, good job! Please review the minor warnings above.';
+            } else if (warningCount > 5) {
+              message = '⚠️ More work needed. Review the comments above, close this pull request and go fix your code.';
+            } else {
+              message = '❌ Could not retrieve warning count. Check the build logs manually.';
+            }
+
+            const reportPath = process.env.GITHUB_WORKSPACE + '/stylecop_report.txt';
+            let fullReport = 'No detailed report available.';
+            if (fs.existsSync(reportPath)) {
+              fullReport = fs.readFileSync(reportPath, 'utf8');
+            }
+            const truncatedReport = fullReport.length > 5000 ? fullReport.substring(0, 5000) + '\n... (truncated)' : fullReport;
+            const commentBody = `## Code Quality Analysis\n\n**Warnings found: ${warningCount === -1 ? 'error' : warningCount}**\n\n${message}\n\n<details><summary>📋 Full report</summary>\n\n\`\`\`\n${truncatedReport}\n\`\`\`\n</details>`;
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## StyleCop Analysis Report\n\`\`\`\n${reportContent}\n\`\`\``
+              body: commentBody
             });
