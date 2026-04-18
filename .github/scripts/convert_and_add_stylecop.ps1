@@ -8,7 +8,7 @@ $xml = [xml](Get-Content $csproj -Encoding UTF8)
 
 if (-not $xml.Project.Sdk) {
     Write-Host "Обнаружен старый формат csproj (не SDK). Конвертируем..."
-    Backup-Item $csproj -Destination "$csproj.bak" -Force
+    Copy-Item $csproj -Destination "$csproj.bak" -Force
 
     $references = $xml.Project.ItemGroup.Reference | ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
     $refBlock = if ($references) { $references -join "`n" } else { "" }
