@@ -221,6 +221,10 @@ SA1210 (активно, см. раздел 3) → конфликтует с usin
   <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 - Рекомендуется добавить в ruleActions отключение правил SA1413, SA1308, SA1210 для устранения конфликтов и лишних предупреждений.
 - Часть ворнингов выключено в .editorconfig
+  dotnet_analyzer_diagnostic.category-Style.severity = warning
+
+- В CSProoject
+
 
   <ItemGroup>
     <None Include="App.config" />
@@ -229,7 +233,6 @@ SA1210 (активно, см. раздел 3) → конфликтует с usin
   </ItemGroup>
 
 
-  dotnet_analyzer_diagnostic.category-Style.severity = warning
 
   <PropertyGroup>
   <!-- Включить анализ стиля кода (правила IDExxxx) во время сборки -->
@@ -237,3 +240,5 @@ SA1210 (активно, см. раздел 3) → конфликтует с usin
   <!-- Использовать последний рекомендованный набор правил -->
   <AnalysisLevel>latest-Recommended</AnalysisLevel>
 </PropertyGroup>
+
+

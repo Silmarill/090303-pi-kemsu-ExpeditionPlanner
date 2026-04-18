@@ -2,8 +2,7 @@
 
 namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
-    public CargoMission()
-     {
+    public CargoMission() {
       _name = "Грузовая миссия";
       Duration = 10;
     }
