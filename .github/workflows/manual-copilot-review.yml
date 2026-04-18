@@ -40,4 +40,4 @@ jobs:
             gh copilot-review ${{ github.event.inputs.pr_number }}
           fi
         env:
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_FOR_COPILOT_REVIEW }}
