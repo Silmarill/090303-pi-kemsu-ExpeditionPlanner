@@ -1,4 +1,4 @@
-name: Базовый код-ревью (по ветк)
+name: Базовый код-ревью (по ветке)
 
 on:
   workflow_dispatch:
@@ -60,86 +60,15 @@ jobs:
           }
         shell: pwsh
 
-      # Конвертация старого csproj в SDK-стиль и установка StyleCop.Analyzers
       - name: Конвертировать проект в SDK-style и добавить StyleCop
         run: |
-          $csproj = "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj"
-          $xml = [xml](Get-Content $csproj -Encoding UTF8)
-          
-          # Проверяем, является ли проект SDK-style
-          if (-not $xml.Project.Sdk) {
-            Write-Host "Обнаружен старый формат csproj (не SDK). Конвертируем..."
-            Backup-Item $csproj -Destination "$csproj.bak" -Force
-            
-            # Собираем все ссылки на сборки (Reference)
-            $references = $xml.Project.ItemGroup.Reference | ForEach-Object { "    <Reference Include=`"$($_.Include)`" />" }
-            $refBlock = if ($references) { $references -join "`n" } else { "" }
-            
-            # Собираем все файлы Compile
-            $compiles = $xml.Project.ItemGroup.Compile | ForEach-Object { "    <Compile Include=`"$($_.Include)`" />" }
-            $compileBlock = if ($compiles) { $compiles -join "`n" } else { "" }
-            
-            # Собираем все None (например, App.config)
-            $nones = $xml.Project.ItemGroup.None | ForEach-Object { "    <None Include=`"$($_.Include)`" />" }
-            $noneBlock = if ($nones) { $nones -join "`n" } else { "" }
-            
-            # Формируем новый csproj в SDK-стиле
-            $newCsproj = @"
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>ExpeditionPlanner</RootNamespace>
-    <AssemblyName>ExpeditionPlanner</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
-$refBlock
-  </ItemGroup>
-  <ItemGroup>
-$compileBlock
-  </ItemGroup>
-  <ItemGroup>
-$noneBlock
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-</Project>
-"@
-            # Сохраняем новый csproj
-            $newCsproj | Out-File -FilePath $csproj -Encoding utf8
-            Write-Host "Проект успешно конвертирован в SDK-стиль, StyleCop.Analyzers добавлен."
-          } else {
-            Write-Host "Проект уже в SDK-стиле. Добавляем StyleCop.Analyzers через PackageReference."
-            # Если уже SDK, просто добавляем PackageReference
-            $ns = $xml.DocumentElement.NamespaceURI
-            $itemGroup = $xml.Project.ItemGroup | Where-Object { $_.PackageReference -and $_.PackageReference.Count -gt 0 }
-            if (-not $itemGroup) {
-              $itemGroup = $xml.CreateElement("ItemGroup", $ns)
-              $xml.Project.AppendChild($itemGroup) | Out-Null
-            }
-            $exists = $itemGroup.PackageReference | Where-Object { $_.Include -eq "StyleCop.Analyzers" }
-            if (-not $exists) {
-              $package = $xml.CreateElement("PackageReference", $ns)
-              $package.SetAttribute("Include", "StyleCop.Analyzers")
-              $package.SetAttribute("Version", "1.2.0-beta.556")
-              $itemGroup.AppendChild($package) | Out-Null
-              $xml.Save($csproj)
-              Write-Host "PackageReference добавлен."
-            }
-          }
-        shell: pwsh
+          pwsh "${{ github.workspace }}/main-branch/.github/scripts/convert_and_add_stylecop.ps1" `
+            -CsprojPath "${{ github.workspace }}/ExpeditionPlanner/ExpeditionPlanner.csproj" `
+            -Workspace "${{ github.workspace }}"
 
-      # Восстановление пакетов (теперь StyleCop будет загружен)
       - name: Восстановить NuGet пакеты
         run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
 
-      # Сборка проекта (теперь с активным StyleCop)
       - name: Собрать проект и сохранить вывод
         run: dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj > build.log
 
