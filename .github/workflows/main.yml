@@ -45,7 +45,7 @@ jobs:
       - name: Check IDE formatting (dotnet format)
         run: |
           dotnet tool install -g dotnet-format
-          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj --verify-no-changes --include-ide --severity info > ide_warnings.txt 2>&1
+          dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
           exit 0
         shell: pwsh
 
