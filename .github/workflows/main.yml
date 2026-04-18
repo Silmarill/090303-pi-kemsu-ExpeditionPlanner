@@ -8,13 +8,16 @@ on:
     branches:
       - 'main'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-test:
     runs-on: windows-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3        
+        uses: actions/checkout@v4
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
@@ -22,9 +25,8 @@ jobs:
       - name: Restore NuGet Packages
         run: nuget restore ExpeditionPlanner.slnx
 
-
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -46,7 +48,7 @@ jobs:
       - name: Get current date and time
         id: date
         run: |
-          $date = (Get-Date -Format "yyyy-MM-dd_HHmm")
+          $date = (Get-Date -Format "yyyy-MM-dd-HHmm")
           echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
@@ -54,12 +56,12 @@ jobs:
         id: artifact_name
         run: |
           $repoName = "${{ github.event.repository.name }}"
-          $branch = "${{ github.ref_name }}" -replace '/', '_'
+          $branch = "${{ github.ref_name }}" -replace '/', '-'
           $actor = "${{ github.actor }}"
           $runNumber = "${{ github.run_number }}"
-          $shaShort = "${{ github.sha }}"[0..6] -join ''
+          $shaShort = "${{ github.sha }}"[0..3] -join ''
           $date = "${{ steps.date.outputs.date }}"
-          $artifactName = "${repoName}_${branch}_${actor}_${date}_${runNumber}_${shaShort}"
+          $artifactName = "${repoName}_${branch}_${actor}_${date}_${runNumber}-${shaShort}"
           echo "name=$artifactName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
@@ -88,4 +90,4 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `## StyleCop Analysis Report\n\`\`\`\n${reportContent}\n\`\`\``
-            }););
+            });
