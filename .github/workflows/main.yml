@@ -192,7 +192,7 @@ jobs:
             if (fs.existsSync(reportPath)) {
               fullReport = fs.readFileSync(reportPath, 'utf8');
             }
-            const truncatedReport = fullReport.length > 5000 ? fullReport.substring(0, 5000) + '\n... (обрезано)' : fullReport;
+            const truncatedReport = fullReport.length > 50000 ? fullReport.substring(0, 50000) + '\n... (обрезано - см. артефакты в Actions)' : fullReport;
             const commentBody = `## Анализ качества кода\n\n**Найдено предупреждений: ${warningCount === -1 ? 'ошибка' : warningCount}**\n\n${message}\n\n<details><summary>📋 Полный отчёт</summary>\n\n\`\`\`\n${truncatedReport}\n\`\`\`\n</details>`;
 
             github.rest.issues.createComment({
