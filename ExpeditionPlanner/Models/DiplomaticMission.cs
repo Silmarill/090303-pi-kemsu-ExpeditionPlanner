@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return "Дипломатическая миссия: заключено 3 торговых соглашения";
+      return $"{Name}: заключено 3 торговых соглашения";
     }
   }
 }
