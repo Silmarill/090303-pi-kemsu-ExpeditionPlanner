@@ -6,7 +6,7 @@ using ExpeditionPlanner.Factories;
 namespace ExpeditionPlanner {
   internal class Program {
     static void Main() {
-      // Объявление фабрик миссий (список)
+      // Объявление фабрик миссий (в список)
       List<MissionFactory> factories;
 
       factories = new List<MissionFactory>
