@@ -8,14 +8,21 @@ using ExpeditionPlanner.Factories;
 namespace ExpeditionPlanner {
   internal class Program {
     static void Main() {
-      Console.WriteLine("Генератор случайных миссий\n");
-      // Создаём одну случайную фабрику
-      MissionFactory randomFactory = new RandomMissionFactory();
+      // Создаём фабрики разных типов
+      List<MissionFactory> factories = new List<MissionFactory> {
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(50),
+        new RandomMissionFactory()
+      };
 
-      int limit = 5;
-      for (int missionIndex = 1; missionIndex <= limit; ++missionIndex) {
-        Console.WriteLine($"Миссия #{missionIndex}");
-        Mission mission = randomFactory.CreateMission();
+      Console.WriteLine("=== План миссий на месяц ===\n");
+
+      foreach (var factory in factories) {
+        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
+        Mission mission = factory.CreateMission();
 
         Console.WriteLine($"Миссия: {mission.Name} (длительность: {mission.Duration} дней)");
         mission.Execute();
