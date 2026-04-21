@@ -1,10 +1,17 @@
 ﻿using System;
+using ExpeditionPlanner.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Factories {
-  internal class RandomMissionFactory {
+  public class RandomMissionFactory : MissionFactory {
+    private List<MissionFactory> _factories;
+    private Random _random;
+
+    RandomMissionFactory() {
+
+    }
+
+    public override Mission CreateMission() {
+    }
   }
 }
