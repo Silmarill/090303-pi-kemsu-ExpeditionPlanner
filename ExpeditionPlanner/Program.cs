@@ -12,7 +12,7 @@ namespace ExpeditionPlanner {
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
-      int missionCount = 1;
+      int missionCount = 5;
 
       for (int missionIndex = 0; missionIndex < missionCount; ++missionIndex) {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
