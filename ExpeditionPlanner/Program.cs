@@ -11,10 +11,7 @@ namespace ExpeditionPlanner {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
-            new ExplorationMissionFactory(),
-            new CombatMissionFactory(),
-            new CargoMissionFactory(),
-            new DiplomaticMissionFactory(),
+              new RandomMissionFactory()
         };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
