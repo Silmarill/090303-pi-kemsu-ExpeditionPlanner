@@ -5,17 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Models {
-  
-  public class DiplomaticMission: Mission {
-    public DiplomaticMission(): base("Дипломатическая миссия", 20){}
+  internal class DiplomaticMission : Mission {
+    public DiplomaticMission() {
+      Name = "Дипломатическая экспедиция";
+      Duration = 25;
+    }
 
     public override void Execute() {
-      Console.WriteLine("Переговоры с инопланетной цивилизцацией, подписание договора");
-
+      Console.WriteLine("Ведение переговоров с инопланетной цивилизацией, подписание мирного договора");
     }
+
     public override string GetReport() {
-      return "Дипломатическая миссия: заключено 3 торговых соглошения";
-      
+      return "Дипломатическая экспедиция: установлены дипломатические отношения с 4 цивилизациями";
     }
   }
 }
