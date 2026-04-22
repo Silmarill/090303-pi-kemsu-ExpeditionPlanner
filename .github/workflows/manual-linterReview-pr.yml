@@ -27,24 +27,29 @@ jobs:
           echo "PR_NUMBER=$pr" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      - name: Получить SHA коммита из PR
-        id: pr_sha
+      - name: Получить информацию о PR и скачать код через API
+        id: download_pr
         run: |
           $prNumber = "${{ steps.pr.outputs.number }}"
           $apiUrl = "https://api.github.com/repos/${{ github.repository }}/pulls/$prNumber"
+          Write-Host "Запрашиваем информацию о PR: $apiUrl"
           $response = Invoke-RestMethod -Uri $apiUrl -Headers @{
             Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"
           }
-          $headSha = $response.head.sha
-          echo "sha=$headSha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $zipballUrl = $response.head.repo.contents_url -replace '{+path}', '/zipball/' + $response.head.sha
+          Write-Host "Скачивание ZIP-архива из $zipballUrl"
+          Invoke-WebRequest -Uri $zipballUrl -Headers @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}" } -OutFile code.zip
+          Expand-Archive -Path code.zip -DestinationPath . -Force
+          # В архиве создаётся папка с именем "owner-repo-commit", перемещаем всё содержимое на уровень выше
+          $extractedFolder = Get-ChildItem -Directory | Where-Object { $_.Name -like "*-*-*" } | Select-Object -First 1
+          if ($extractedFolder) {
+            Write-Host "Перемещаем содержимое из $($extractedFolder.FullName) в текущую директорию"
+            Get-ChildItem -Path $extractedFolder.FullName | Move-Item -Destination . -Force
+            Remove-Item $extractedFolder.FullName -Recurse
+          }
+          Remove-Item code.zip
+          Write-Host "Код PR успешно получен"
         shell: pwsh
-
-      - name: Получить код репозитория (ветка студента)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.pr_sha.outputs.sha }}
-          fetch-depth: 1
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Получить скрипты и конфиги из ветки main
         uses: actions/checkout@v4
