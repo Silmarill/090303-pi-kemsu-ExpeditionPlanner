@@ -7,7 +7,7 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   public class Program {
-    public static void Main() {
+     static void Main() {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {

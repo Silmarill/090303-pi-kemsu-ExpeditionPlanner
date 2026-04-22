@@ -30,7 +30,7 @@ def parse_build_log_to_json(input_path, output_json):
         line = line.strip()
         if not line:
             continue
-
+    
         match = pattern_with_coords.match(line)
         if match:
             full_path = match.group(1)
@@ -41,6 +41,8 @@ def parse_build_log_to_json(input_path, output_json):
             message = match.group(6).strip()
             url = extract_url(message)
             key = (full_path, line_num, col_num, code)
+            if url is None and code.startswith('IDE'):
+                url = f"https://learn.microsoft.com/ru-ru/dotnet/fundamentals/code-analysis/style-rules/{code}"
             if key not in unique_warnings:
                 unique_warnings[key] = {
                     "full_path": full_path,
@@ -53,7 +55,7 @@ def parse_build_log_to_json(input_path, output_json):
                     "raw_line": line
                 }
             continue
-
+    
         match = pattern_alt.match(line)
         if match:
             source = match.group(1)
@@ -61,6 +63,8 @@ def parse_build_log_to_json(input_path, output_json):
             code = match.group(3)
             message = match.group(4).strip()
             url = extract_url(message)
+            if url is None and code.startswith('IDE'):
+                url = f"https://learn.microsoft.com/ru-ru/dotnet/fundamentals/code-analysis/style-rules/{code}"
             key = (source, None, None, code)
             if key not in unique_warnings:
                 unique_warnings[key] = {
