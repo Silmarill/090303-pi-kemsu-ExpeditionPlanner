@@ -38,7 +38,7 @@ jobs:
         shell: pwsh
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKENNNN }}
           REPO: ${{ github.repository }}
         run: |
           $ErrorActionPreference = "Stop"
@@ -212,12 +212,12 @@ jobs:
               Remove-Item $reportFile
 
               # Copilot review
-              Write-Host "Running Copilot review..."
-              gh extension install k1LoW/gh-copilot-review --force
-              $env:GH_TOKEN = $CopilotToken
-              gh copilot-review $prNumber
-              if ($LASTEXITCODE -ne 0) { Write-Host "⚠️ Copilot review failed" }
-              $env:GH_TOKEN = $PatToken
+              #Write-Host "Running Copilot review..."
+              #gh extension install k1LoW/gh-copilot-review --force
+              #$env:GH_TOKEN = $CopilotToken
+              #gh copilot-review $prNumber
+              #if ($LASTEXITCODE -ne 0) { Write-Host "⚠️ Copilot review failed" }
+              #$env:GH_TOKEN = $PatToken
 
               # Очистка
               Pop-Location
