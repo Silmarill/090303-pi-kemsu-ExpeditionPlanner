@@ -32,12 +32,14 @@ jobs:
         with:
           ref: refs/pull/${{ steps.pr.outputs.number }}/head
           fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}   
 
       - name: Получить скрипты и конфиги из ветки main
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-branch
+          token: ${{ secrets.GITHUB_TOKEN }}   
 
       - name: Установить MSBuild
         uses: microsoft/setup-msbuild@v3
