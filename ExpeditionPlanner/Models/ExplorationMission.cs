@@ -7,8 +7,8 @@ namespace ExpeditionPlanner.Models {
       Duration = 30;
     }
 
-    public override void Execute() {
-      Console.WriteLine(" Картографирование сектора, сбор научных данных");
+    public override string Execute() {
+      return " Картографирование сектора, сбор научных данных";
     }
 
     public override string GetReport() {

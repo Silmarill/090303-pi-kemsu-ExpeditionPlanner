@@ -7,8 +7,8 @@ namespace ExpeditionPlanner.Models {
       Duration = 10;
     }
 
-    public override void Execute() {
-      Console.WriteLine(" Доставка ресурсов на орбитальную станцию");
+    public override string Execute() {
+      return " Доставка ресурсов на орбитальную станцию";
     }
 
     public override string GetReport() {

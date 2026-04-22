@@ -2,17 +2,20 @@ using System;
 
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
+    int dayDuration = 20;
+    int countTradeAgreements = 3;
+
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
-      Duration = 20;
+      Duration = dayDuration;
     }
 
-    public override void Execute() {
-      Console.WriteLine("Переговоры с инопланетной цивилизацией, подписание договора");
+    public override string Execute() {
+      return "Переговоры с инопланетной цивилизацией, подписание договора";
     }
 
     public override string GetReport() {
-      return $"{Name}: заключено 3 торговых соглашения";
+      return $"{Name}: заключено {countTradeAgreements} торговых соглашения";
     }
   }
 }

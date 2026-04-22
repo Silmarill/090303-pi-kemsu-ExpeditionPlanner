@@ -1,17 +1,17 @@
-using System;
-
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    private int _peopleCount;
-    
+    private readonly int _peopleCount;
+    private readonly int _baseDuration = 5;
+    private readonly int _peoplePerDay = 10;
+
     public RescueMission(int peopleCount) {
       Name = "Спасательная миссия";
-      Duration = 5 + peopleCount / 10;
+      Duration = _baseDuration + (peopleCount / _peoplePerDay);
       _peopleCount = peopleCount;
     }
 
-    public override void Execute() {
-      Console.WriteLine($"{Name}: эвакуация {_peopleCount} человек");
+    public override string Execute() {
+      return $"{Name}: эвакуация {_peopleCount} человек";
     }
 
     public override string GetReport() {
