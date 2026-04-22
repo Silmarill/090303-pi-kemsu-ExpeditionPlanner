@@ -4,7 +4,7 @@ on:
   #schedule:
     # Каждую среду в 00:15 по Кемерово (UTC+7)
    # - cron: '27 18 22 4 *'   # UTC 17:15 = Кемерово 00:15 (след. дня, т.к. UTC+7) 22 апреля
-  workflow_dispatch:         # возможность ручного запуска
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -58,7 +58,6 @@ jobs:
           $branches = "${{ steps.get_branches.outputs.branches }}" -split ','
           $total = $branches.Count
           $index = 0
-          $failed = @()
           
           git clone --depth 1 --branch main https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }} main-branch-temp
           
@@ -106,9 +105,9 @@ jobs:
               gh pr edit $prNumber --title "[НЕ КОМПИЛИРУЕТСЯ] $prTitle" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
               $errorLog = ($buildOutput | Select-Object -Last 30) -join "`n"
               $comment = "Сборка завершилась с ошибкой. Код: $buildExitCode`n`n```n$errorLog`n```"
-              $comment | Out-File -FilePath "$env:GITHUB_WORKSPACE\comment.txt" -Encoding utf8
-              gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE\comment.txt" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
-              Remove-Item "$env:GITHUB_WORKSPACE\comment.txt"
+              $comment | Out-File -FilePath "$env:GITHUB_WORKSPACE/comment.txt" -Encoding utf8
+              gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE/comment.txt" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+              Remove-Item "$env:GITHUB_WORKSPACE/comment.txt"
               Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (ошибка компиляции)"
               cd ../..
               Remove-Item -Recurse -Force student-code
@@ -137,9 +136,9 @@ jobs:
               $reportContent = $reportContent.Substring(0, 60000) + "`n... (отчёт обрезан, полный в артефактах)"
             }
             $reportComment = "## Результаты статического анализа`n`n```n$reportContent`n```"
-            $reportComment | Out-File -FilePath "$env:GITHUB_WORKSPACE\report.txt" -Encoding utf8
-            gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE\report.txt" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
-            Remove-Item "$env:GITHUB_WORKSPACE\report.txt"
+            $reportComment | Out-File -FilePath "$env:GITHUB_WORKSPACE/report.txt" -Encoding utf8
+            gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE/report.txt" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+            Remove-Item "$env:GITHUB_WORKSPACE/report.txt"
             
             gh extension install k1LoW/gh-copilot-review --force
             echo "${{ secrets.COPILOT_GITHUB_TOKEN }}" | gh auth login --with-token
