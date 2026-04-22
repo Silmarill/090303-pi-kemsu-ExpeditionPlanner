@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+
 
 // Обратите внимание на совпадение пространств имен и папок
 using ExpeditionPlanner.Factories;
@@ -8,12 +10,14 @@ using ExpeditionPlanner.Models;
 namespace ExpeditionPlanner {
   public class Program {
     public static void Main() {
+      int peopleCount = 50;
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
-            new ExplorationMissionFactory(),
-            new CombatMissionFactory(),
-            new CargoMissionFactory()
+            new RandomMissionFactory(),
+            new RandomMissionFactory(),
+            new RandomMissionFactory(),
+            new RandomMissionFactory()
       };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
