@@ -38,7 +38,7 @@ jobs:
         shell: pwsh
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKENNNN }}
+          COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           $ErrorActionPreference = "Stop"
@@ -148,6 +148,11 @@ jobs:
 
               Write-Host "✅ Build successful for $branch"
 
+              # Папка для артефактов этой ветки (символы "/" -> "_")
+              $branchSafe = $branch -replace '/', '_'
+              $artifactDir = "$env:GITHUB_WORKSPACE/artifacts/$branchSafe"
+              New-Item -Path $artifactDir -ItemType Directory -Force | Out-Null
+
               # Сохраняем лог сборки
               $buildOutput | Out-File -FilePath build.log -Encoding utf8
 
@@ -170,6 +175,11 @@ jobs:
               python "../main-branch-temp/.github/scripts/parse_log_to_json.py" --log-file combined.log --output-json warnings.json
               python "../main-branch-temp/.github/scripts/generate_report_from_json.py" --json-file warnings.json --output-txt stylecop_report.txt
 
+              # Сохраняем промежуточные артефакты в подпапку ветки
+              foreach ($f in @("build.log", "ide_warnings.txt", "combined.log", "warnings.json", "stylecop_report.txt")) {
+                  if (Test-Path $f) { Copy-Item $f -Destination $artifactDir -Force }
+              }
+
               $reportContent = Get-Content stylecop_report.txt -Raw -ErrorAction SilentlyContinue
               if (-not $reportContent) { $reportContent = "Детальный отчёт недоступен." }
               if ($reportContent.Length -gt 50000) {
@@ -177,14 +187,16 @@ jobs:
               }
 
               # Считаем количество предупреждений из warnings.json
+              # Пустой массив [] — это 0 предупреждений, не ошибка
               $warningCount = -1
               if (Test-Path "warnings.json") {
                   try {
-                      $warningsJson = Get-Content "warnings.json" -Raw | ConvertFrom-Json
+                      $rawJson = Get-Content "warnings.json" -Raw
+                      $warningsJson = $rawJson | ConvertFrom-Json
                       if ($warningsJson -is [System.Array]) {
-                          $warningCount = $warningsJson.Count
-                      } elseif ($warningsJson.warnings) {
-                          $warningCount = $warningsJson.warnings.Count
+                          $warningCount = $warningsJson.Count          # [] -> 0, [...] -> N
+                      } elseif ($null -ne $warningsJson.warnings) {
+                          $warningCount = @($warningsJson.warnings).Count
                       } else {
                           $warningCount = ($warningsJson | Get-Member -MemberType NoteProperty).Count
                       }
@@ -196,28 +208,28 @@ jobs:
               $statusMessage = if ($warningCount -eq 0) {
                   "✅ Все автоматические проверки кода прошли успешно."
               } elseif ($warningCount -gt 0 -and $warningCount -le 5) {
-                  "👍 В целом неплохо, хорошая работа! Пожалуйста, ознакомьтесь с небольшими предупреждениями выше."
+                  "👍 В целом неплохо, хорошая работа! Пожалуйста, ознакомьтесь с небольшими предупреждениями ниже."
               } elseif ($warningCount -gt 5) {
-                  "⚠️ Требуется доработка. Ознакомьтесь с замечаниями и исправьте код."
+                  "⚠️ Требуется доработка. Ознакомьтесь с замечаниями ниже и исправьте код."
               } else {
                   "❌ Не удалось получить количество предупреждений. Проверьте логи сборки вручную."
               }
 
               $warningLabel = if ($warningCount -eq -1) { "ошибка" } else { "$warningCount" }
               $fence = '```'
-              $reportComment = "## Анализ качества кода`n`n**Найдено предупреждений: $warningLabel**`n`n$statusMessage`n`n<details><summary>📋 Полный отчёт</summary>`n`n$fence`n$reportContent`n$fence`n</details>"
+              $reportComment = "## Анализ качества кода`n`n**Найдено предупреждений: $warningLabel**`n`n$statusMessage`n`n📋 **Полный отчёт:**`n`n$fence`n$reportContent`n$fence"
               $reportFile = "$env:GITHUB_WORKSPACE/report.txt"
               $reportComment | Out-File -FilePath $reportFile -Encoding utf8
               gh pr comment $prNumber --body-file $reportFile --repo $Repository
               Remove-Item $reportFile
 
               # Copilot review
-              #Write-Host "Running Copilot review..."
-              #gh extension install k1LoW/gh-copilot-review --force
-              #$env:GH_TOKEN = $CopilotToken
-              #gh copilot-review $prNumber
-              #if ($LASTEXITCODE -ne 0) { Write-Host "⚠️ Copilot review failed" }
-              #$env:GH_TOKEN = $PatToken
+              Write-Host "Running Copilot review..."
+              gh extension install k1LoW/gh-copilot-review --force
+              $env:GH_TOKEN = $CopilotToken
+              gh copilot-review $prNumber
+              if ($LASTEXITCODE -ne 0) { Write-Host "⚠️ Copilot review failed" }
+              $env:GH_TOKEN = $PatToken
 
               # Очистка
               Pop-Location
@@ -232,3 +244,10 @@ jobs:
         with:
           name: failed-branches
           path: failed-branches.txt
+
+      - name: Upload per-branch artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: branch-artifacts
+          path: artifacts/
