@@ -10,8 +10,8 @@ namespace ExpeditionPlanner.Models {
       _peopleCount = peopleCount;
     }
 
-    public override void Execute() {
-      Console.WriteLine($"{Name}: эвакуация {_peopleCount} человек");
+    public override string Execute() {
+      return $"{Name}: эвакуация {_peopleCount} человек";
     }
 
     public override string GetReport() {

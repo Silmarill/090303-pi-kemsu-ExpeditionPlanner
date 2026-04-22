@@ -10,8 +10,8 @@ namespace ExpeditionPlanner.Models {
       Duration = dayDuration;
     }
 
-    public override void Execute() {
-      Console.WriteLine("Переговоры с инопланетной цивилизацией, подписание договора");
+    public override string Execute() {
+      return "Переговоры с инопланетной цивилизацией, подписание договора";
     }
 
     public override string GetReport() {

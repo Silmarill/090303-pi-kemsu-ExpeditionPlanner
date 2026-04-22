@@ -20,7 +20,7 @@ namespace ExpeditionPlanner {
         Mission mission = factory.CreateMission();
 
         Console.WriteLine($"Миссия: {mission.Name} (длительность: {mission.Duration} дней)");
-        mission.Execute();
+        Console.WriteLine(mission.Execute());
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();
       }
