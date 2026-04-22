@@ -84,16 +84,18 @@ jobs:
               }
 
               # Создаём PR
-              $prTitle = "$branch - Initial review"
+              $prTitle = "$branch - Первичная проверка"
               $prBody = @"
-          Automated code review.
+          Проведена первичная проверка стиля.
+          Проведено первичное ИИ ревью.
+          Внимательно изучите и внесите изменения.
 
-          - Style check passed.
-          - Copilot review completed.
+          Если будут вопросы:
+          1) Находите замечания, с которым не согласны (или есть сомнение/непонимание почему так).
+          2) Тегаете преподавателя под замечанием через @ и пишете вопрос в комментарии.
+          3) Скидываете ссылку на комментарий в чатик (можно сопроводить ссылку текстом) - преподаватель возьмет в работу.
 
-          Please review the comments and fix the issues.
-
-          If you have questions, tag the instructor in the PR comments.
+          Пожелание: делать изменения за один пуш-коммит - так удобнее проверять, что вы не проигнорировали ревью.
           "@
 
               $prResult = gh pr create --title "$prTitle" --body "$prBody" --base main --head $branch --repo $Repository 2>&1
@@ -130,7 +132,7 @@ jobs:
 
               if ($buildExitCode -ne 0) {
                   Write-Host "❌ Build failed for $branch"
-                  gh pr edit $prNumber --title "[BUILD FAILED] $prTitle" --repo $Repository
+                  gh pr edit $prNumber --title "$prTitle [BUILD FAILED]" --repo $Repository
                   $errorLog = ($buildOutput | Select-Object -Last 30) -join "`n"
                   $fence = '```'
                   $comment = "Build failed. Exit code: $buildExitCode`n`n$fence`n$errorLog`n$fence"
@@ -168,12 +170,42 @@ jobs:
               python "../main-branch-temp/.github/scripts/parse_log_to_json.py" --log-file combined.log --output-json warnings.json
               python "../main-branch-temp/.github/scripts/generate_report_from_json.py" --json-file warnings.json --output-txt stylecop_report.txt
 
-              $reportContent = Get-Content stylecop_report.txt -Raw
-              if ($reportContent.Length -gt 60000) {
-                  $reportContent = $reportContent.Substring(0, 60000) + "`n... (truncated, see artifacts for full report)"
+              $reportContent = Get-Content stylecop_report.txt -Raw -ErrorAction SilentlyContinue
+              if (-not $reportContent) { $reportContent = "Детальный отчёт недоступен." }
+              if ($reportContent.Length -gt 50000) {
+                  $reportContent = $reportContent.Substring(0, 50000) + "`n... (обрезано - см. артефакты в Actions)"
               }
+
+              # Считаем количество предупреждений из warnings.json
+              $warningCount = -1
+              if (Test-Path "warnings.json") {
+                  try {
+                      $warningsJson = Get-Content "warnings.json" -Raw | ConvertFrom-Json
+                      if ($warningsJson -is [System.Array]) {
+                          $warningCount = $warningsJson.Count
+                      } elseif ($warningsJson.warnings) {
+                          $warningCount = $warningsJson.warnings.Count
+                      } else {
+                          $warningCount = ($warningsJson | Get-Member -MemberType NoteProperty).Count
+                      }
+                  } catch {
+                      $warningCount = -1
+                  }
+              }
+
+              $statusMessage = if ($warningCount -eq 0) {
+                  "✅ Все автоматические проверки кода прошли успешно."
+              } elseif ($warningCount -gt 0 -and $warningCount -le 5) {
+                  "👍 В целом неплохо, хорошая работа! Пожалуйста, ознакомьтесь с небольшими предупреждениями выше."
+              } elseif ($warningCount -gt 5) {
+                  "⚠️ Требуется доработка. Ознакомьтесь с замечаниями и исправьте код."
+              } else {
+                  "❌ Не удалось получить количество предупреждений. Проверьте логи сборки вручную."
+              }
+
+              $warningLabel = if ($warningCount -eq -1) { "ошибка" } else { "$warningCount" }
               $fence = '```'
-              $reportComment = "## StyleCop analysis results`n`n$fence`n$reportContent`n$fence"
+              $reportComment = "## Анализ качества кода`n`n**Найдено предупреждений: $warningLabel**`n`n$statusMessage`n`n<details><summary>📋 Полный отчёт</summary>`n`n$fence`n$reportContent`n$fence`n</details>"
               $reportFile = "$env:GITHUB_WORKSPACE/report.txt"
               $reportComment | Out-File -FilePath $reportFile -Encoding utf8
               gh pr comment $prNumber --body-file $reportFile --repo $Repository
