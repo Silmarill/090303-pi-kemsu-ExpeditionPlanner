@@ -42,7 +42,10 @@ jobs:
           $response = Invoke-RestMethod -Uri $apiUrl -Headers @{
             Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"
           }
-          $zipUrl = $response.head.repo.archive_url -replace '{archive_format}{/ref}', '/zipball/' + $response.head.sha
+          $owner = $response.head.repo.owner.login
+          $repo = $response.head.repo.name
+          $sha = $response.head.sha
+          $zipUrl = "https://api.github.com/repos/${owner}/${repo}/zipball/${sha}"
           Write-Host "Скачивание ZIP-архива из $zipUrl"
           Invoke-WebRequest -Uri $zipUrl -Headers @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}" } -OutFile code.zip
           Expand-Archive -Path code.zip -DestinationPath . -Force
