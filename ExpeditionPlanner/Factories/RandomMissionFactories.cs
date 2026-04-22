@@ -5,19 +5,25 @@ using System.Collections.Generic;
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactories : MissionFactory {
     private List<MissionFactory> _factories = new List<MissionFactory>();
-    public Random _random = new Random();
-    int randomIndex;
+    private Random _random = new Random();
 
     public RandomMissionFactories() {
       _factories.Add(new CargoMissionFactory());
       _factories.Add(new CombatMissionFactory());
       _factories.Add(new DiplomaticMissionFactory());
       _factories.Add(new ExplorationMissionFactory());
-      _factories.Add(new RescueMissionFactory(0));
     }
 
     public override Mission CreateMission() {
-      randomIndex = _random .Next(_factories.Count);
+      int randomIndex = _random.Next(_factories.Count + 1);
+      
+      if (randomIndex == _factories.Count) {
+        int peopleCount = _random.Next(10, 101);
+        MissionFactory rescueMissionFactory = new RescueMissionFactory(peopleCount);
+        Mission rescueMission = rescueMissionFactory.CreateMission();
+        return rescueMission;
+      }
+      
       MissionFactory randomFactory = _factories[randomIndex];
       Mission newMission = randomFactory.CreateMission();
       return newMission;

@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace ExpeditionPlanner.Models {
-  internal class DiplomaticMission : Mission {
+  public class DiplomaticMission : Mission {
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
       Duration = 20;
