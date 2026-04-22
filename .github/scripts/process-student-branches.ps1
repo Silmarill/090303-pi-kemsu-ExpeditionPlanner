@@ -85,8 +85,9 @@ If you have questions, tag the instructor in the PR comments.
         Write-Host "❌ Build failed for $branch"
         gh pr edit $prNumber --title "[BUILD FAILED] $prTitle" --repo $Repository --token $PatToken
         $errorLog = ($buildOutput | Select-Object -Last 30) -join "`n"
-        $comment = "Build failed. Exit code: $buildExitCode`n`n```n$errorLog`n```"
-        $commentFile = "$env:GITHUB_WORKSPACE\comment.txt"
+        $fence = '```'
+        $comment = "Build failed. Exit code: $buildExitCode`n`n$fence`n$errorLog`n$fence"
+        $commentFile = "$env:GITHUB_WORKSPACE/comment.txt"
         $comment | Out-File -FilePath $commentFile -Encoding utf8
         gh pr comment $prNumber --body-file $commentFile --repo $Repository --token $PatToken
         Remove-Item $commentFile
@@ -124,8 +125,9 @@ If you have questions, tag the instructor in the PR comments.
     if ($reportContent.Length -gt 60000) {
         $reportContent = $reportContent.Substring(0, 60000) + "`n... (truncated, see artifacts for full report)"
     }
-    $reportComment = "## StyleCop analysis results`n`n```n$reportContent`n```"
-    $reportFile = "$env:GITHUB_WORKSPACE\report.txt"
+    $fence = '```'
+    $reportComment = "## StyleCop analysis results`n`n$fence`n$reportContent`n$fence"
+    $reportFile = "$env:GITHUB_WORKSPACE/report.txt"
     $reportComment | Out-File -FilePath $reportFile -Encoding utf8
     gh pr comment $prNumber --body-file $reportFile --repo $Repository --token $PatToken
     Remove-Item $reportFile
