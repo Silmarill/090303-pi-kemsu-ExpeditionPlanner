@@ -1,26 +1,28 @@
 ﻿using System;
 
-namespace ExpeditionPlanner.Models {
-  public class RescueMission : Mission {
+namespace ExpeditionPlanner.Models
+{
+  public class RescueMission : Mission
+  {
     private int _peopleCount;
-    public RescueMission(int peopleCount) {
+
+    public RescueMission(
+      int peopleCount,
+      int preparationDaysBase,
+      int peopleEvacuatedPerDay)
+    {
       Name = "Спасательская миссия";
       _peopleCount = peopleCount;
-
-      int basePeopleCount;
-      int peoplePerDay;
-
-      basePeopleCount = 5;
-      peoplePerDay = 10;
-
-      Duration = basePeopleCount + _peopleCount / peoplePerDay;
+      Duration = preparationDaysBase + (_peopleCount / peopleEvacuatedPerDay);
     }
 
-    public override void Execute() {
-      Console.WriteLine($" Спасательная операция: эвакувция {_peopleCount} человек");
+    public override void Execute()
+    {
+      Console.WriteLine($" Спасательная операция: эвакуация {_peopleCount} человек");
     }
 
-    public override string GetReport() {
+    public override string GetReport()
+    {
       return $" {Name}: спасено {_peopleCount} человек";
     }
   }

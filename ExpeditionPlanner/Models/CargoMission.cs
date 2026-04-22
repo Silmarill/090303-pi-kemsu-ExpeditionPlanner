@@ -1,18 +1,26 @@
 ﻿using System;
 
-namespace ExpeditionPlanner.Models {
-  public class CargoMission : Mission {
-    public CargoMission() {
+namespace ExpeditionPlanner.Models
+{
+  public class CargoMission : Mission
+  {
+    private int _cargoTonsDelivered;
+
+    public CargoMission(int durationDays, int cargoTonsDelivered)
+    {
       Name = "Грузовая миссия";
-      Duration = 10;
+      Duration = durationDays;
+      _cargoTonsDelivered = cargoTonsDelivered;
     }
 
-    public override void Execute() {
-      Console.WriteLine(" Доставка ресурсов на орбитальную станцию");
+    public override void Execute()
+    {
+      Console.WriteLine($" Доставка {_cargoTonsDelivered} тонн ресурсов на орбитальную станцию");
     }
 
-    public override string GetReport() {
-      return $" {Name}: доставлено 500 тонн груза";
+    public override string GetReport()
+    {
+      return $" {Name}: доставлено {_cargoTonsDelivered} тонн груза";
     }
   }
 }

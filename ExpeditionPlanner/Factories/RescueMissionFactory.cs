@@ -1,15 +1,29 @@
-﻿using System;
-using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Models;
 
-namespace ExpeditionPlanner.Factories {
-  public class RescueMissionFactory : MissionFactory {
+namespace ExpeditionPlanner.Factories
+{
+  public class RescueMissionFactory : MissionFactory
+  {
     private int _peopleCount;
-    public RescueMissionFactory(int peopleCount) {
-      _peopleCount = peopleCount;
-    }
-    public override Mission CreateMission() {
+    private int _preparationDaysBase;
+    private int _peopleEvacuatedPerDay;
 
-      return new RescueMission(_peopleCount);
+    public RescueMissionFactory(
+      int peopleCount,
+      int preparationDaysBase,
+      int peopleEvacuatedPerDay)
+    {
+      _peopleCount = peopleCount;
+      _preparationDaysBase = preparationDaysBase;
+      _peopleEvacuatedPerDay = peopleEvacuatedPerDay;
+    }
+
+    public override Mission CreateMission()
+    {
+      return new RescueMission(
+        _peopleCount,
+        _preparationDaysBase,
+        _peopleEvacuatedPerDay);
     }
   }
 }

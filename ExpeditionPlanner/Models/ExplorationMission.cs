@@ -1,18 +1,26 @@
 ﻿using System;
 
-namespace ExpeditionPlanner.Models {
-  public class ExplorationMission : Mission {
-    public ExplorationMission() {
+namespace ExpeditionPlanner.Models
+{
+  public class ExplorationMission : Mission
+  {
+    private int _newStarSystemsDiscovered;
+
+    public ExplorationMission(int durationDays, int newStarSystemsDiscovered)
+    {
       Name = "Исследовательская миссия";
-      Duration = 30;
+      Duration = durationDays;
+      _newStarSystemsDiscovered = newStarSystemsDiscovered;
     }
 
-    public override void Execute() {
-      Console.WriteLine(" Картографирование сектора, сбор научных данных");
+    public override void Execute()
+    {
+      Console.WriteLine($" Картографирование: зафиксировано {_newStarSystemsDiscovered} новых звёздных систем");
     }
 
-    public override string GetReport() {
-      return $" {Name}: открыто 5 новых звёздных систем";
+    public override string GetReport()
+    {
+      return $" {Name}: открыто {_newStarSystemsDiscovered} новых звёздных систем";
     }
   }
 }
