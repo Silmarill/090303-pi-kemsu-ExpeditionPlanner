@@ -116,10 +116,12 @@ jobs:
               Write-Host "❌ Сборка не удалась для $branch"
               # Меняем заголовок PR
               gh pr edit $prNumber --title "[НЕ КОМПИЛИРУЕТСЯ] $prTitle" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
-              # Добавляем комментарий с логом ошибки
-              $errorLog = $buildOutput | Select-Object -Last 30 | Out-String
-              $comment = "Сборка завершилась с ошибкой. Код: $buildExitCode`n`n````n$errorLog`n```"
-              gh pr comment $prNumber --body "$comment" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+              # Добавляем комментарий с логом ошибки через временный файл
+              $errorLog = ($buildOutput | Select-Object -Last 30) -join "`n"
+              $comment = "Сборка завершилась с ошибкой. Код: $buildExitCode`n`n```n$errorLog`n```"
+              $comment | Out-File -FilePath comment.txt -Encoding utf8
+              gh pr comment $prNumber --body-file comment.txt --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+              Remove-Item comment.txt
               Add-Content "../../failed-branches.txt" "- $branch (ошибка компиляции)"
               cd ../..
               Remove-Item -Recurse -Force student-code
@@ -149,14 +151,16 @@ jobs:
             python "../main-branch-temp/.github/scripts/parse_log_to_json.py" --log-file combined.log --output-json warnings.json
             python "../main-branch-temp/.github/scripts/generate_report_from_json.py" --json-file warnings.json --output-txt stylecop_report.txt
             
-            # Добавляем отчёт в комментарий к PR
+            # Добавляем отчёт в комментарий к PR через временный файл
             $reportContent = Get-Content stylecop_report.txt -Raw
             # Ограничиваем длину (GitHub ограничение ~65k)
             if ($reportContent.Length -gt 60000) {
               $reportContent = $reportContent.Substring(0, 60000) + "`n... (отчёт обрезан, полный в артефактах)"
             }
-            $reportComment = "## Результаты статического анализа`n`n````n$reportContent`n```"
-            gh pr comment $prNumber --body "$reportComment" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+            $reportComment = "## Результаты статического анализа`n`n```n$reportContent`n```"
+            $reportComment | Out-File -FilePath report.txt -Encoding utf8
+            gh pr comment $prNumber --body-file report.txt --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+            Remove-Item report.txt
             
             # 8. Запуск Copilot review
             # Устанавливаем GitHub CLI и расширение
