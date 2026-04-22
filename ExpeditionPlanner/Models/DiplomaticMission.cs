@@ -2,9 +2,11 @@ using System;
 
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
+    int dayDuration = 20;
+
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
-      Duration = 20;
+      Duration = dayDuration;
     }
 
     public override void Execute() {

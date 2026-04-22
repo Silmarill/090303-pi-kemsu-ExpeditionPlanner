@@ -3,7 +3,7 @@ using System;
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private int _peopleCount;
-    
+
     public RescueMission(int peopleCount) {
       Name = "Спасательная миссия";
       Duration = 5 + peopleCount / 10;
