@@ -12,18 +12,18 @@ namespace ExpeditionPlanner {
 
       Console.WriteLine("    Случайные миссии    \n");
 
-        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
+        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метод у всех одинаковый
       Mission mission = randomFactory.CreateMission();
 
       Console.WriteLine($"Миссия: {mission.Name} (длительность: {mission.Duration} дней)");
       mission.Execute();
       Console.WriteLine(mission.GetReport());
       Console.WriteLine();
-      }
-
-      // Легко добавить новую миссию, не меняя существующий код!
-      //MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
-      //Mission diplomaticMission = newFactory.CreateMission();
-      //diplomaticMission.Execute();
     }
+
+    // Легко добавить новую миссию, не меняя существующий код!
+    //MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
+    //Mission diplomaticMission = newFactory.CreateMission();
+    //diplomaticMission.Execute();
   }
+}
