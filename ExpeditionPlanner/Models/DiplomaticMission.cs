@@ -3,6 +3,7 @@ using System;
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
     int dayDuration = 20;
+    int countTradeAgreements = 3;
 
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
@@ -14,7 +15,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $"{Name}: заключено 3 торговых соглашения";
+      return $"{Name}: заключено {countTradeAgreements} торговых соглашения";
     }
   }
 }
