@@ -3,7 +3,7 @@
 namespace ExpeditionPlanner.Factories {
   public class CombatMissionFactory : MissionFactory 
     {
-    public override Mission CreateMission() {
+         public override Mission CreateMission() {
       return new CombatMission();
     }
   }
