@@ -1,8 +1,6 @@
 name: Код-ревью по PR (приватные репо)
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       pr_number:
