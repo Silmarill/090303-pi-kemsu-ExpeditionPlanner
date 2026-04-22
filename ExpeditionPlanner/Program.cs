@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
-// Обратите внимание на совпадение пространств имен и папок
-using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Models;
 using ExpeditionPlanner.Factories;
+using System.Collections.Generic;
+using System;
 
 namespace ExpeditionPlanner {
   internal class Program {
