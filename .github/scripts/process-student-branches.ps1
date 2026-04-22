@@ -6,15 +6,18 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Получаем список веток (можно передать как параметр или вычислить здесь)
+# Получаем список веток
 $branches = git branch -r | Where-Object { $_ -match 'origin/(group[5-6]/[^/]+)$' } | ForEach-Object { $matches[1] }
 $total = $branches.Count
 $index = 0
 
-# Клонируем main-branch скрипты (уже должны быть склонированы в workflow, но на всякий случай)
-if (-not (Test-Path "main-branch-temp")) {
-    git clone --depth 1 --branch main https://x-access-token:$PatToken@github.com/$Repository main-branch-temp
-}
+# Создаём временную папку для main-branch скриптов
+git clone --depth 1 --branch main "https://x-access-token:$PatToken@github.com/$Repository" main-branch-temp
+
+# Инициализируем файл с провальными ветками
+$failedBranchesFile = "$env:GITHUB_WORKSPACE/failed-branches.txt"
+New-Item -Path $failedBranchesFile -ItemType File -Force | Out-Null
+Add-Content $failedBranchesFile "Ветки без изменений или с ошибкой компиляции:`n"
 
 foreach ($branch in $branches) {
     $index++
@@ -22,16 +25,16 @@ foreach ($branch in $branches) {
     Write-Host "[$index/$total] Обработка ветки: $branch"
     Write-Host "========================================"
 
-    # Проверка изменений
+    # Проверяем изменения
     git fetch origin $branch
     $diffStat = git diff --stat main...origin/$branch
     if (-not $diffStat) {
         Write-Host "⚠️ Ветка $branch не содержит изменений относительно main. Пропускаем."
-        Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (нет изменений)"
+        Add-Content $failedBranchesFile "- $branch (нет изменений)"
         continue
     }
 
-    # Создание PR
+    # Создаём PR
     $prTitle = "$branch - Первичная проверка"
     $prBody = @"
 Проведена первичная проверка стиля.
@@ -46,28 +49,28 @@ foreach ($branch in $branches) {
 Пожелание: делать изменения за один пуш-коммит - так удобнее проверять, что вы не проигнорировали ревью.
 "@
 
-    $prNumber = gh pr create --title "$prTitle" --body "$prBody" --base main --head $branch --repo $Repository --token $PatToken 2>&1
+    $prResult = gh pr create --title "$prTitle" --body "$prBody" --base main --head $branch --repo $Repository --token $PatToken 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Не удалось создать PR для $branch. Ошибка: $prNumber"
-        Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (не удалось создать PR)"
+        Write-Host "❌ Не удалось создать PR для $branch. Ошибка: $prResult"
+        Add-Content $failedBranchesFile "- $branch (не удалось создать PR)"
         continue
     }
-    $prNumber = $prNumber -replace '.*#(\d+).*', '$1'
+    $prNumber = $prResult -replace '.*#(\d+).*', '$1'
     Write-Host "✅ PR #$prNumber создан"
 
     # Клонируем код студента
-    git clone --depth 1 --branch $branch https://x-access-token:$PatToken@github.com/$Repository student-code
+    git clone --depth 1 --branch $branch "https://x-access-token:$PatToken@github.com/$Repository" student-code
     Push-Location student-code
 
     # Копируем конфиги
     Copy-Item -Path "../main-branch-temp/.editorconfig" -Destination "." -Force -ErrorAction SilentlyContinue
-    New-Item -Path "ExpeditionPlanner" -ItemType Directory -Force
+    New-Item -Path "ExpeditionPlanner" -ItemType Directory -Force | Out-Null
     Copy-Item -Path "../main-branch-temp/Settings.StyleCop.json" -Destination "ExpeditionPlanner/Settings.StyleCop.json" -Force -ErrorAction SilentlyContinue
 
-    # Конвертация проекта
+    # Конвертируем проект и добавляем StyleCop
     pwsh "../main-branch-temp/.github/scripts/convert_and_add_stylecop.ps1" -CsprojPath "ExpeditionPlanner/ExpeditionPlanner.csproj" -Workspace (Get-Location).Path
 
-    # Восстановление и сборка
+    # Сборка
     dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
     $buildOutput = dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj 2>&1
     $buildExitCode = $LASTEXITCODE
@@ -80,7 +83,7 @@ foreach ($branch in $branches) {
         $comment | Out-File -FilePath "$env:GITHUB_WORKSPACE/comment.txt" -Encoding utf8
         gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE/comment.txt" --repo $Repository --token $PatToken
         Remove-Item "$env:GITHUB_WORKSPACE/comment.txt"
-        Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (ошибка компиляции)"
+        Add-Content $failedBranchesFile "- $branch (ошибка компиляции)"
         Pop-Location
         Remove-Item -Recurse -Force student-code
         continue
@@ -95,7 +98,7 @@ foreach ($branch in $branches) {
     dotnet tool install -g dotnet-format
     dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
 
-    # Объединение логов
+    # Объединяем логи
     Get-Content build.log > combined.log
     Add-Content combined.log "`n=== Предупреждения dotnet format ===`n"
     if (Test-Path ide_warnings.txt) {
@@ -104,7 +107,7 @@ foreach ($branch in $branches) {
         Add-Content combined.log "Файл с предупреждениями IDE не найден."
     }
 
-    # Отчёты
+    # Анализ стиля
     python "../main-branch-temp/.github/scripts/parse_log_to_json.py" --log-file combined.log --output-json warnings.json
     python "../main-branch-temp/.github/scripts/generate_report_from_json.py" --json-file warnings.json --output-txt stylecop_report.txt
 
@@ -128,4 +131,4 @@ foreach ($branch in $branches) {
     Write-Host "✅ Обработка ветки $branch завершена"
 }
 
-Write-Host "`nСписок проблемных веток сохранён в failed-branches.txt"
+Write-Host "`nСписок проблемных веток сохранён в $failedBranchesFile"

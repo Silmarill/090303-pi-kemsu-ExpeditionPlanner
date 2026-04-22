@@ -34,27 +34,10 @@ jobs:
       - name: Установить зависимости Python
         run: pip install regex
 
-      - name: Получить список студенческих веток (сохранить в переменную)
-        id: get_branches
-        run: |
-          $branches = git branch -r | Where-Object { $_ -match 'origin/(group[5-6]/[^/]+)$' } | ForEach-Object { $matches[1] }
-          $branchList = $branches -join ','
-          echo "branches=$branchList" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "Всего веток: $($branches.Count)"
-        shell: pwsh
-
-      - name: Создать артефакт для провальных веток
-        run: |
-          New-Item -Path "$env:GITHUB_WORKSPACE/failed-branches.txt" -ItemType File -Force
-          Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "Ветки без изменений или с ошибкой компиляции:`n"
-        shell: pwsh
-
-      - name: Запуск обработки студенческих веток
+      - name: Обработка студенческих веток
         run: |
           ./.github/scripts/process-student-branches.ps1 -PatToken "${{ secrets.PAT_TOKEN }}" -CopilotToken "${{ secrets.COPILOT_GITHUB_TOKEN }}" -Repository "${{ github.repository }}"
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Загрузить артефакт с провальными ветками
         uses: actions/upload-artifact@v4
