@@ -23,23 +23,23 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
 
-      - name: Установить MSBuild
+      - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
 
-      - name: Установить Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Установить зависимости Python
+      - name: Install Python dependencies
         run: pip install regex
 
-      - name: Обработка студенческих веток
+      - name: Process student branches
         run: |
           ./.github/scripts/process-student-branches.ps1 -PatToken "${{ secrets.PAT_TOKEN }}" -CopilotToken "${{ secrets.COPILOT_GITHUB_TOKEN }}" -Repository "${{ github.repository }}"
         shell: pwsh
 
-      - name: Загрузить артефакт с провальными ветками
+      - name: Upload failed branches artifact
         uses: actions/upload-artifact@v4
         with:
           name: failed-branches
