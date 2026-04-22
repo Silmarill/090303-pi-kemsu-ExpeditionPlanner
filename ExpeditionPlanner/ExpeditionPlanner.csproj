@@ -48,7 +48,7 @@
     <Compile Include="Factories\DiplomaticMissionFactory.cs" />
     <Compile Include="Factories\ExplorationMissionFactory.cs" />
     <Compile Include="Factories\MissionFactory.cs" />
-    <Compile Include="Factories\RandomMissionFactory.cs" />
+    <Compile Include="Factories\RandomMissionFactories.cs" />
     <Compile Include="Factories\RescueMissionFactory.cs" />
     <Compile Include="Models\CargoMission.cs" />
     <Compile Include="Models\CombatMission.cs" />
