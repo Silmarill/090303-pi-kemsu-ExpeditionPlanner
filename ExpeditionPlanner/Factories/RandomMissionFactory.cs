@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private readonly Random _random = new();
     private static readonly int _peopleCount = 42;
+
+    private readonly Random _random = new();
 
     private readonly List<MissionFactory> _factories = [
       new CargoMissionFactory(),

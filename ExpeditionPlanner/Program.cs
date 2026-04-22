@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ExpeditionPlanner.Factories;
+﻿using ExpeditionPlanner.Factories;
 using ExpeditionPlanner.Models;
 
 // Создаём фабрики разных типов

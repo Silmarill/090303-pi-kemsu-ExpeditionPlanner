@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
-    int destroyEnemyShip = 12;
+    private readonly int _destroyEnemyShip = 12;
 
     public CombatMission() {
       Name = "Боевая миссия";
@@ -14,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" {Name}: уничтожено {destroyEnemyShip} вражеских кораблей";
+      return $" {Name}: уничтожено {_destroyEnemyShip} вражеских кораблей";
     }
   }
 }
