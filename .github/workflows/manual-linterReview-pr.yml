@@ -40,14 +40,14 @@ jobs:
           $apiUrl = "https://api.github.com/repos/${{ github.repository }}/pulls/$prNumber"
           Write-Host "Запрашиваем информацию о PR: $apiUrl"
           $response = Invoke-RestMethod -Uri $apiUrl -Headers @{
-            Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"
+            Authorization = "Bearer ${{ secrets.PAT_TOKEN }}"
           }
           $owner = $response.head.repo.owner.login
           $repo = $response.head.repo.name
           $sha = $response.head.sha
           $zipUrl = "https://api.github.com/repos/${owner}/${repo}/zipball/${sha}"
           Write-Host "Скачивание ZIP-архива из $zipUrl"
-          Invoke-WebRequest -Uri $zipUrl -Headers @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}" } -OutFile code.zip
+          Invoke-WebRequest -Uri $zipUrl -Headers @{ Authorization = "Bearer ${{ secrets.PAT_TOKEN }}" } -OutFile code.zip
           Expand-Archive -Path code.zip -DestinationPath . -Force
           # В архиве создаётся папка с именем "owner-repo-sha", перемещаем всё содержимое на уровень выше
           $extractedFolder = Get-ChildItem -Directory | Where-Object { $_.Name -match '^[^-]+-[^-]+-[a-f0-9]+$' } | Select-Object -First 1
