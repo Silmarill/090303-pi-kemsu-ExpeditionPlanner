@@ -187,18 +187,25 @@ jobs:
               }
 
               # Считаем количество предупреждений из warnings.json
-              # Пустой массив [] — это 0 предупреждений, не ошибка
+              # ConvertFrom-Json возвращает $null для "[]", поэтому сначала проверяем текст
               $warningCount = -1
               if (Test-Path "warnings.json") {
                   try {
-                      $rawJson = Get-Content "warnings.json" -Raw
-                      $warningsJson = $rawJson | ConvertFrom-Json
-                      if ($warningsJson -is [System.Array]) {
-                          $warningCount = $warningsJson.Count          # [] -> 0, [...] -> N
-                      } elseif ($null -ne $warningsJson.warnings) {
-                          $warningCount = @($warningsJson.warnings).Count
+                      $rawJson = (Get-Content "warnings.json" -Raw).Trim()
+                      if ($rawJson -eq '[]') {
+                          # Пустой массив — предупреждений нет
+                          $warningCount = 0
+                      } elseif ($rawJson.StartsWith('[')) {
+                          # Непустой массив — считаем через @() чтобы гарантировать массив
+                          $warningCount = @($rawJson | ConvertFrom-Json).Count
                       } else {
-                          $warningCount = ($warningsJson | Get-Member -MemberType NoteProperty).Count
+                          # Объект вида { "warnings": [...] }
+                          $warningsJson = $rawJson | ConvertFrom-Json
+                          if ($null -ne $warningsJson.warnings) {
+                              $warningCount = @($warningsJson.warnings).Count
+                          } else {
+                              $warningCount = ($warningsJson | Get-Member -MemberType NoteProperty).Count
+                          }
                       }
                   } catch {
                       $warningCount = -1
@@ -237,15 +244,11 @@ jobs:
               Write-Host "✅ Finished processing branch $branch"
           }
 
+          # Копируем failed-branches.txt в корень папки артефактов
+          Copy-Item $failedBranchesFile -Destination "$env:GITHUB_WORKSPACE/artifacts/failed-branches.txt" -Force
           Write-Host "`nProcessing complete. Failed branches saved to $failedBranchesFile"
 
-      - name: Upload failed branches artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: failed-branches
-          path: failed-branches.txt
-
-      - name: Upload per-branch artifacts
+      - name: Upload all artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
