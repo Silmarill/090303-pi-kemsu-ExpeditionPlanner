@@ -40,7 +40,6 @@ jobs:
       - name: Получить список студенческих веток
         id: get_branches
         run: |
-          # Получаем все удалённые ветки, фильтруем group1/, group2/, group3/
           $branches = git branch -r | Where-Object { $_ -match 'origin/(group[5-6]/[^/]+)$' } | ForEach-Object { $matches[1] }
           $branchList = $branches -join ','
           echo "branches=$branchList" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
@@ -49,8 +48,8 @@ jobs:
 
       - name: Создать артефакт для провальных веток
         run: |
-          New-Item -Path failed-branches.txt -ItemType File -Force
-          Add-Content failed-branches.txt "Ветки без изменений или с ошибкой компиляции:`n"
+          New-Item -Path "$env:GITHUB_WORKSPACE/failed-branches.txt" -ItemType File -Force
+          Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "Ветки без изменений или с ошибкой компиляции:`n"
         shell: pwsh
 
       - name: Обработка каждой ветки
@@ -61,8 +60,6 @@ jobs:
           $index = 0
           $failed = @()
           
-          # Клонируем дополнительные скрипты из main-branch позже
-          # Сначала получим main-branch скрипты (один раз)
           git clone --depth 1 --branch main https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }} main-branch-temp
           
           foreach ($branch in $branches) {
@@ -71,58 +68,48 @@ jobs:
             Write-Host "[$index/$total] Обработка ветки: $branch"
             Write-Host "========================================"
             
-            # 1. Проверить, есть ли изменения относительно main
             git fetch origin $branch
             $diffStat = git diff --stat main...origin/$branch
             if (-not $diffStat) {
               Write-Host "⚠️ Ветка $branch не содержит изменений относительно main. Пропускаем."
-              Add-Content failed-branches.txt "- $branch (нет изменений)"
+              Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (нет изменений)"
               continue
             }
             
-            # 2. Создать PR
             $prTitle = "$branch - Первичная проверка"
             $prBody = "Проведена первичная проверка стиля.`nПроведено первичное ИИ ревью.`nВнимательно изучите и внесите изменения.`n`nЕсли будут вопросы:`n1) Находите замечания, с которым не согласны (или есть сомнение/непонимание почему так).`n2) Тегаете преподавателя под замечанием через @ и пишете вопрос в комментарии.`n3) Скидываете ссылку на комментарий в чатик (можно сопроводить ссылку текстом) - преподаватель возьмет в работу.`n`nПожелание: делать изменения за один пуш-коммит - так удобнее проверять, что вы не проигнорировали ревью."
             
-            # Создаём PR через gh
             $prNumber = gh pr create --title "$prTitle" --body "$prBody" --base main --head $branch --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }} 2>&1
             if ($LASTEXITCODE -ne 0) {
               Write-Host "❌ Не удалось создать PR для $branch. Ошибка: $prNumber"
-              Add-Content failed-branches.txt "- $branch (не удалось создать PR)"
+              Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (не удалось создать PR)"
               continue
             }
-            # Извлекаем номер PR из вывода
             $prNumber = $prNumber -replace '.*#(\d+).*', '$1'
             Write-Host "✅ PR #$prNumber создан"
             
-            # 3. Клонируем код студента (ветка) для проверки
             git clone --depth 1 --branch $branch https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }} student-code
             cd student-code
             
-            # 4. Копируем .editorconfig и Settings.StyleCop.json из временной папки main-branch
             Copy-Item -Path "../main-branch-temp/.editorconfig" -Destination "." -Force -ErrorAction SilentlyContinue
             New-Item -Path "ExpeditionPlanner" -ItemType Directory -Force
             Copy-Item -Path "../main-branch-temp/Settings.StyleCop.json" -Destination "ExpeditionPlanner/Settings.StyleCop.json" -Force -ErrorAction SilentlyContinue
             
-            # 5. Конвертируем проект в SDK-style и добавляем StyleCop (если нужно)
             pwsh "../main-branch-temp/.github/scripts/convert_and_add_stylecop.ps1" -CsprojPath "ExpeditionPlanner/ExpeditionPlanner.csproj" -Workspace (Get-Location).Path
             
-            # 6. Восстановить пакеты и собрать
             dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
             $buildOutput = dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj 2>&1
             $buildExitCode = $LASTEXITCODE
             
             if ($buildExitCode -ne 0) {
               Write-Host "❌ Сборка не удалась для $branch"
-              # Меняем заголовок PR
               gh pr edit $prNumber --title "[НЕ КОМПИЛИРУЕТСЯ] $prTitle" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
-              # Добавляем комментарий с логом ошибки через временный файл
               $errorLog = ($buildOutput | Select-Object -Last 30) -join "`n"
               $comment = "Сборка завершилась с ошибкой. Код: $buildExitCode`n`n```n$errorLog`n```"
-              $comment | Out-File -FilePath comment.txt -Encoding utf8
-              gh pr comment $prNumber --body-file comment.txt --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
-              Remove-Item comment.txt
-              Add-Content "../../failed-branches.txt" "- $branch (ошибка компиляции)"
+              $comment | Out-File -FilePath "$env:GITHUB_WORKSPACE\comment.txt" -Encoding utf8
+              gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE\comment.txt" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+              Remove-Item "$env:GITHUB_WORKSPACE\comment.txt"
+              Add-Content "$env:GITHUB_WORKSPACE/failed-branches.txt" "- $branch (ошибка компиляции)"
               cd ../..
               Remove-Item -Recurse -Force student-code
               continue
@@ -130,15 +117,10 @@ jobs:
             
             Write-Host "✅ Сборка успешна для $branch"
             
-            # 7. Запуск стилевого анализа (как в manual-linterReview-pr-cashauto)
-            # Сохраняем build.log
             $buildOutput | Out-File -FilePath build.log -Encoding utf8
-            
-            # dotnet format
             dotnet tool install -g dotnet-format
             dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
             
-            # Объединяем логи
             Get-Content build.log > combined.log
             Add-Content combined.log "`n=== Предупреждения dotnet format ===`n"
             if (Test-Path ide_warnings.txt) {
@@ -147,36 +129,27 @@ jobs:
               Add-Content combined.log "Файл с предупреждениями IDE не найден."
             }
             
-            # Преобразуем в JSON и создаём отчёт
             python "../main-branch-temp/.github/scripts/parse_log_to_json.py" --log-file combined.log --output-json warnings.json
             python "../main-branch-temp/.github/scripts/generate_report_from_json.py" --json-file warnings.json --output-txt stylecop_report.txt
             
-            # Добавляем отчёт в комментарий к PR через временный файл
             $reportContent = Get-Content stylecop_report.txt -Raw
-            # Ограничиваем длину (GitHub ограничение ~65k)
             if ($reportContent.Length -gt 60000) {
               $reportContent = $reportContent.Substring(0, 60000) + "`n... (отчёт обрезан, полный в артефактах)"
             }
             $reportComment = "## Результаты статического анализа`n`n```n$reportContent`n```"
-            $reportComment | Out-File -FilePath report.txt -Encoding utf8
-            gh pr comment $prNumber --body-file report.txt --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
-            Remove-Item report.txt
+            $reportComment | Out-File -FilePath "$env:GITHUB_WORKSPACE\report.txt" -Encoding utf8
+            gh pr comment $prNumber --body-file "$env:GITHUB_WORKSPACE\report.txt" --repo ${{ github.repository }} --token ${{ secrets.PAT_TOKEN }}
+            Remove-Item "$env:GITHUB_WORKSPACE\report.txt"
             
-            # 8. Запуск Copilot review
-            # Устанавливаем GitHub CLI и расширение
             gh extension install k1LoW/gh-copilot-review --force
-            # Используем специальный токен для Copilot (если есть)
             echo "${{ secrets.COPILOT_GITHUB_TOKEN }}" | gh auth login --with-token
-            # Запускаем ревью (без force, так как PR новый)
             gh copilot-review $prNumber --repo ${{ github.repository }} || Write-Host "⚠️ Copilot review не удался"
             
-            # Очистка
             cd ../..
             Remove-Item -Recurse -Force student-code
             Write-Host "✅ Обработка ветки $branch завершена"
           }
           
-          # Сохраняем список провальных веток
           Write-Host "`nСписок проблемных веток сохранён в failed-branches.txt"
         shell: pwsh
         env:
