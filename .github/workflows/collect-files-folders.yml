@@ -32,28 +32,24 @@ jobs:
           $Repository    = $env:REPO
           $BranchPattern = $env:BRANCH_PATTERN
 
-          # Расширения файлов, которые нужно скопировать (исходники, проекты, конфиги, ресурсы)
+          # Расширения файлов для копирования в структуру
           $SourceExtensions = @('.cs', '.csproj', '.sln', '.slnx', '.config', '.resx', '.settings')
 
-          # Список исключаемых папок (Properties больше не исключаем)
+          # Папки, которые исключаются везде (Properties больше не исключаем)
           $ExcludedDirs = @(
               '.vscode', '.git', 'bin', 'obj', 'packages',
               'node_modules', '.vs', 'resources', 'Assets', '.github'
           )
 
-          # Файлы, которые НЕ копируем в структуру проекта (служебные, не влияющие на сборку)
+          # Файлы, которые НЕ копируются в структуру проекта (т.е. не нужны для сборки)
           $ExcludedFiles = @(
               'packages.config',
-              '.editorconfig',
-              '.gitattributes',
-              '.gitignore',
-              'LICENSE', 'LICENSE.md',
-              'README.md', 'README.txt',
+              '.editorconfig', '.gitattributes', '.gitignore',
+              'LICENSE', 'LICENSE.md', 'README.md', 'README.txt',
               '.yml'
           )
-          # AssemblyInfo.cs теперь НЕ в этом списке (он нужен для сборки)
 
-          # Для structure.txt и combined_sources.txt исключаем также AssemblyInfo.cs и App.config
+          # Для structure.txt и combined_sources.txt дополнительно исключаем AssemblyInfo.cs и App.config
           $ExcludedFilesForTree = $ExcludedFiles + @(
               'AssemblyInfo.cs',
               'App.config', 'app.config', 'App.Config'
@@ -72,6 +68,9 @@ jobs:
           $outRoot = "$env:GITHUB_WORKSPACE/collected"
           New-Item -Path $outRoot -ItemType Directory -Force | Out-Null
 
+          # -----------------------------------------------------------------
+          # Цикл по каждой ветке (студенты + main)
+          # -----------------------------------------------------------------
           foreach ($branch in $branches) {
               $index++
               Write-Host "`n========================================"
@@ -88,9 +87,7 @@ jobs:
                   clone-temp
               Push-Location clone-temp
 
-              # --------------------------------------------------------------
-              # 1. structure.txt (только .cs и .csproj, исключая служебные файлы)
-              # --------------------------------------------------------------
+              # ---- 1. structure.txt (только .cs и .csproj) ----
               function Write-Tree {
                   param([string]$Path, [string]$Indent = "")
                   $items = Get-ChildItem -LiteralPath $Path |
@@ -121,9 +118,7 @@ jobs:
               $treeLines | Out-File -FilePath $treeFile -Encoding utf8
               Write-Host "  → structure.txt generated (only .cs, .csproj, without service files)"
 
-              # --------------------------------------------------------------
-              # 2. combined_sources.txt (только .cs и .csproj, исключая служебные)
-              # --------------------------------------------------------------
+              # ---- 2. combined_sources.txt для одного студента ----
               Write-Host "  → creating combined_sources.txt..."
               
               $sourceFilesForCombine = Get-ChildItem -Recurse -File |
@@ -177,9 +172,7 @@ jobs:
               $combinedContent -join "`r`n" | Out-File -FilePath $combinedFile -Encoding utf8
               Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count), without service files)"
 
-              # --------------------------------------------------------------
-              # 3. Копирование полной структуры проекта (включая Properties и AssemblyInfo.cs)
-              # --------------------------------------------------------------
+              # ---- 3. Копирование полной структуры проекта (включая Properties и AssemblyInfo.cs) ----
               Write-Host "  → copying project structure with folders (including AssemblyInfo.cs)..."
               
               $filesToCopy = Get-ChildItem -Recurse -File |
@@ -211,14 +204,59 @@ jobs:
                   Copy-Item -Path $file.FullName -Destination $targetPath -Force
               }
               
-              Write-Host "  → copied project structure: $($filesToCopy.Count) files (folders preserved, including Properties/AssemblyInfo.cs)"
+              Write-Host "  → copied project structure: $($filesToCopy.Count) files (folders preserved)"
               Write-Host "  → structure and combined sources saved in $destDir"
 
               Pop-Location
               Remove-Item -Recurse -Force clone-temp
           }
 
-          Write-Host "`nCollection complete. Output: $outRoot"
+          # -----------------------------------------------------------------
+          # 4. Создание общей склейки всех студентов (исключая main)
+          # -----------------------------------------------------------------
+          Write-Host "`n========================================"
+          Write-Host "Creating combined file for all students..."
+          Write-Host "========================================"
+
+          # Заданный порядок студентов
+          $studentOrder = @('group1_maslennikov', 'group2_nesterov', 'group3_ginzhul')
+          $allCombinedLines = @()
+
+          foreach ($student in $studentOrder) {
+              $studentFolder = Join-Path $outRoot $student
+              $combinedSourceFile = Join-Path $studentFolder "_${student}_combined_sources.txt"
+              
+              if (-not (Test-Path $studentFolder)) {
+                  Write-Host "  → Warning: folder for $student not found, skipping"
+                  continue
+              }
+              
+              if (-not (Test-Path $combinedSourceFile)) {
+                  Write-Host "  → Warning: $combinedSourceFile not found, skipping"
+                  continue
+              }
+              
+              Write-Host "  → adding $student"
+              $allCombinedLines += "=== STUDENT: $student ==="
+              
+              # Читаем содержимое _combined_sources.txt студента
+              $studentContent = Get-Content $combinedSourceFile -Raw -Encoding UTF8
+              
+              # Удаляем первую строку "=== COMBINED SOURCES: ... ===" и вторую "=== Total files: ... ==="
+              # так как в общей склейке достаточно заголовка студента.
+              $lines = $studentContent -split "`r`n"
+              $filteredLines = $lines | Select-Object -Skip 2
+              $filteredContent = $filteredLines -join "`r`n"
+              
+              $allCombinedLines += $filteredContent
+              $allCombinedLines += ""   # пустая строка между студентами для читаемости
+          }
+          
+          # Сохраняем общий файл в корне collected/
+          $globalCombinedFile = Join-Path $outRoot "_all_students_combined.txt"
+          $allCombinedLines -join "`r`n" | Out-File -FilePath $globalCombinedFile -Encoding utf8
+          Write-Host "  → created $globalCombinedFile"
+          Write-Host "Collection complete. Output: $outRoot"
 
       - name: Upload collected sources
         uses: actions/upload-artifact@v4
