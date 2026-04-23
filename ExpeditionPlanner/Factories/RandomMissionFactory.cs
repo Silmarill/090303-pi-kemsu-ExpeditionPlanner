@@ -1,10 +1,26 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
-  internal class RandomMissionFactory {
+  public class RandomMissionFactory : MissionFactory {
+    private List<MissionFactory> _factories;
+    private Random _random;
+
+    public RandomMissionFactory() {
+      _random = new Random();
+      _factories = new List<MissionFactory> {
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(50)
+      };
+    }
+
+    public override Mission CreateMission() {
+      int randomIndex = _random.Next(0, _factories.Count);
+      return _factories[randomIndex].CreateMission();
+    }
   }
 }

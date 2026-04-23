@@ -1,13 +1,16 @@
-﻿using System;
+using System;
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    public RescueMissionFactory(int v) {
+    private int _peopleCount;
+
+    public RescueMissionFactory(int peopleCount) {
+      _peopleCount = peopleCount;
     }
 
     public override Mission CreateMission() {
-      return new RescueMission();
+      return new RescueMission(_peopleCount);
     }
   }
 }
