@@ -3,7 +3,7 @@
 namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
     public CargoMission() {
-      _name = "Грузовая миссия";
+      Name = "Грузовая миссия";
       Duration = 10;
     }
 
@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" {_name}: доставлено 500 тонн груза";
+      return $" {Name}: доставлено 500 тонн груза";
     }
   }
 }

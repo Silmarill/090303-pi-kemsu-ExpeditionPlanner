@@ -3,7 +3,7 @@
 namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
     public CombatMission() {
-      _name = "Боевая миссия";
+      Name = "Боевая миссия";
       Duration = 15;
     }
 
@@ -12,7 +12,8 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" {_name}: уничтожено 12 вражеских кораблей";
+      return $" {Name}: уничтожено 12 вражеских кораблей";
     }
   }
+
 }
