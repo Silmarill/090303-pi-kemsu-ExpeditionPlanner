@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
+    private int _defaultDurationMinutes = 30;
+    private int _defaultTradeAgreements = 3;
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
-      Duration = 30;
+      Duration = _defaultDurationMinutes;
     }
+
     public override void Execute() {
       Console.WriteLine(" Переговоры с инопланетной цивилизацией");
     }
 
     public override string GetReport() {
-      return $" {Name}: заключено 3 торговых соглашения";
+      return $" {Name}: заключено {_defaultTradeAgreements} торговых соглашения";
     }
   }
 }

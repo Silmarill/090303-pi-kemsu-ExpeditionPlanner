@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private int _peopleCount;
+    private int _baseDurationMinutes = 5;
+    private int _peolplePerExtraMinute = 10;
+
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = 5 + peopleCount / 10;
+      Duration = _baseDurationMinutes + peopleCount / _peolplePerExtraMinute;
     }
+
     public override void Execute() {
       Console.WriteLine($" Спасательная операция: эвакуация {_peopleCount} человек");
     }

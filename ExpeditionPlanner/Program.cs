@@ -7,22 +7,23 @@ using ExpeditionPlanner.Factories;
 
 namespace ExpeditionPlanner {
   internal class Program {
+    private static int _rescueCrewCapacity = 50;
     static void Main() {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
-            new ExplorationMissionFactory(),
-            new CombatMissionFactory(),
-            new CargoMissionFactory(),
-            new DiplomaticMissionFactory(),
-            new RescueMissionFactory(50),
-            new RandomMissionFactory()
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(_rescueCrewCapacity),
+        new RandomMissionFactory()
       };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
       foreach (var factory in factories) {
-        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
+        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метод у всех одинаковый
         Mission mission = factory.CreateMission();
 
         Console.WriteLine($"Миссия: {mission.Name} (длительность: {mission.Duration} дней)");
