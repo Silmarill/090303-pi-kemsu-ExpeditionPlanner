@@ -6,20 +6,22 @@ using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    private int _peopleCount;
+    private const int BaseDurationDays = 5;
+    private const int PeoplePerExtraDay = 10;
+    private readonly int _peopleCount;
 
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = 5 + peopleCount / 10;
+      Duration = BaseDurationDays + ( _peopleCount / PeoplePerExtraDay );
     }
 
-    public override void Execute() {
-      Console.WriteLine($" Спасательная операция: эвакуация {_peopleCount} человек ");
+    public override string Execute() {
+      return $" Спасательная операция: эвакуация {_peopleCount} человек";
     }
 
     public override string GetReport() {
-      return $" Спасательная миссия: спасено {_peopleCount} человек ";
+      return $" Спасательная миссия: спасено {_peopleCount} человек";
     }
   }
 }

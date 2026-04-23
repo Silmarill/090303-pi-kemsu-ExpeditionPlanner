@@ -2,18 +2,19 @@
 
 namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
+    private const int DefaultDurationDays = 15;
+
     public CombatMission() {
       Name = "Боевая миссия";
-      Duration = 15;
+      Duration = DefaultDurationDays;
     }
 
-    public override void Execute() {
-      Console.WriteLine(" Патрулирование, уничтожение пиратов ");
+    public override string Execute() {
+      return " Патрулирование, уничтожение пиратов";
     }
 
     public override string GetReport() {
-      return $" {Name}: уничтожено 12 вражеских кораблей ";
+      return $" {Name}: уничтожено 12 вражеских кораблей";
     }
   }
-
 }
