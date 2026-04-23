@@ -32,7 +32,7 @@ jobs:
           $Repository    = $env:REPO
           $BranchPattern = $env:BRANCH_PATTERN
 
-          # Расширения файлов, которые нужно собрать
+          # Расширения файлов, которые нужно скопировать
           $SourceExtensions = @('.cs', '.csproj', '.sln', '.slnx')
 
           # Список исключаемых папок и файлов
@@ -88,6 +88,9 @@ jobs:
               $branchSafe = $branch -replace '/', '_'
               $destDir    = "$outRoot/$branchSafe"
               New-Item -Path $destDir -ItemType Directory -Force | Out-Null
+              
+              # Префикс для файлов с именем ветки
+              $filePrefix = "_${branchSafe}"
 
               # Клонируем ветку студента
               git clone --depth 1 --branch $branch `
@@ -114,6 +117,7 @@ jobs:
                       
                   foreach ($item in $items) {
                       if ($item.PSIsContainer) {
+                          # Заменяем "\" на "/" в путях
                           "$Indent$($item.Name)/"
                           Write-Tree -Path $item.FullName -Indent "$Indent    "
                       } else {
@@ -126,17 +130,19 @@ jobs:
               }
 
               $separator = '=' * 60
-              $treeLines = @("Структура репозитория: $branch", $separator, "")
+              $treeLines = @("Repository structure: $branch", $separator, "")
               $treeLines += Write-Tree -Path (Get-Location).Path
-              $treeLines | Out-File -FilePath "$destDir/structure.txt" -Encoding utf8
-              Write-Host "  → structure.txt сгенерирован"
+              $treeFile = "$destDir/${filePrefix}_structure.txt"
+              $treeLines | Out-File -FilePath $treeFile -Encoding utf8
+              Write-Host "  → structure.txt generated"
 
-              # --- Создаем склеенный файл с исходниками (только .cs файлы) ---
-              Write-Host "  → создание combined_sources.txt..."
+              # --- Создаем склеенный файл с исходниками (.cs и .csproj файлы) ---
+              Write-Host "  → creating combined_sources.txt..."
               
-              # Получаем все .cs файлы, исключая служебные
-              $csFiles = Get-ChildItem -Recurse -File -Filter "*.cs" |
+              # Получаем все .cs и .csproj файлы, исключая служебные
+              $sourceFilesForCombine = Get-ChildItem -Recurse -File |
                   Where-Object {
+                      ($_.Extension.ToLower() -eq '.cs' -or $_.Extension.ToLower() -eq '.csproj') -and
                       $ExcludedDirs -notcontains $_.Directory.Name -and
                       $_.FullName -notmatch "\\Properties\\" -and
                       $_.FullName -notmatch "\\bin\\" -and
@@ -144,7 +150,7 @@ jobs:
                   }
               
               # Дополнительная фильтрация по полному пути
-              $csFiles = $csFiles | Where-Object {
+              $sourceFilesForCombine = $sourceFilesForCombine | Where-Object {
                   $fullPath = $_.FullName
                   $exclude = $false
                   foreach ($excludedDir in $ExcludedDirs) {
@@ -163,26 +169,25 @@ jobs:
               }
               
               # Сортируем файлы: сначала по глубине пути (сначала папки), затем по имени
-              $sortedFiles = $csFiles | Sort-Object {
-                  # Сначала группируем: папки (глубина > 1) идут раньше корневых (глубина = 1)
+              $sortedFiles = $sourceFilesForCombine | Sort-Object {
                   $depth = Get-PathDepth -Path $_.DirectoryName
                   return $depth, $_.DirectoryName, $_.Name
               }
               
               # Создаем склеенный файл
               $combinedContent = @()
-              $combinedContent += "=== СКЛЕЕННЫЕ ИСХОДНИКИ: $branch ==="
-              $combinedContent += "=== Всего файлов: $($sortedFiles.Count) ==="
+              $combinedContent += "=== COMBINED SOURCES: $branch ==="
+              $combinedContent += "=== Total files: $($sortedFiles.Count) ==="
               $combinedContent += ""
               
-              $prevDir = ""
               foreach ($file in $sortedFiles) {
-                  # Получаем относительный путь от корня проекта
+                  # Получаем относительный путь от корня проекта и заменяем "\" на "/"
                   $relativePath = Resolve-Path -Relative $file.FullName
                   $relativePath = $relativePath -replace '^\.\\', ''
+                  $relativePath = $relativePath -replace '\\', '/'
                   
                   # Добавляем разделитель с именем файла
-                  $combinedContent += "=== Файл: $relativePath ==="
+                  $combinedContent += "=== File: $relativePath ==="
                   
                   # Читаем содержимое файла
                   try {
@@ -190,15 +195,15 @@ jobs:
                       $combinedContent += $content
                       $combinedContent += ""  # Пустая строка после содержимого
                   } catch {
-                      $combinedContent += "[ОШИБКА: не удалось прочитать файл]"
+                      $combinedContent += "[ERROR: failed to read file]"
                       $combinedContent += ""
                   }
               }
               
-              # Сохраняем склеенный файл
-              $combinedFile = "$destDir/combined_sources.txt"
+              # Сохраняем склеенный файл с префиксом
+              $combinedFile = "$destDir/${filePrefix}_combined_sources.txt"
               $combinedContent -join "`r`n" | Out-File -FilePath $combinedFile -Encoding utf8
-              Write-Host "  → combined_sources.txt создан (файлов: $($sortedFiles.Count))"
+              Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count))"
 
               # --- Копируем исходные файлы в плоский список (исключая служебные) ---
               $sourceFiles = Get-ChildItem -Recurse -File |
@@ -241,7 +246,7 @@ jobs:
               }
 
               $copiedCount = $sourceFiles.Count
-              Write-Host "  → скопировано файлов: $copiedCount"
+              Write-Host "  → copied files: $copiedCount"
 
               Pop-Location
               Remove-Item -Recurse -Force clone-temp
