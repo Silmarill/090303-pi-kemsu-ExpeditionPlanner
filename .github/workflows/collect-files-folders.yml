@@ -32,19 +32,18 @@ jobs:
           $Repository    = $env:REPO
           $BranchPattern = $env:BRANCH_PATTERN
 
-          # Расширения файлов, которые нужно скопировать в структуру (включая .config для App.config)
-          $SourceExtensions = @('.cs', '.csproj', '.sln', '.slnx', '.config')
+          # Расширения файлов, которые нужно скопировать (исходники, проекты, конфиги, ресурсы)
+          $SourceExtensions = @('.cs', '.csproj', '.sln', '.slnx', '.config', '.resx', '.settings')
 
-          # Список исключаемых папок (общий)
+          # Список исключаемых папок (Properties больше не исключаем)
           $ExcludedDirs = @(
-              '.vscode', '.git', 'Properties', 'bin', 'obj', 'packages',
+              '.vscode', '.git', 'bin', 'obj', 'packages',
               'node_modules', '.vs', 'resources', 'Assets', '.github'
           )
 
-          # Список исключаемых файлов при копировании структуры (App.config НЕ исключаем)
+          # Файлы, которые НЕ копируем в структуру проекта (служебные, не влияющие на сборку)
           $ExcludedFiles = @(
-              'packages.config',   # NuGet конфигурация
-              'AssemblyInfo.cs',
+              'packages.config',
               '.editorconfig',
               '.gitattributes',
               '.gitignore',
@@ -52,9 +51,13 @@ jobs:
               'README.md', 'README.txt',
               '.yml'
           )
+          # AssemblyInfo.cs теперь НЕ в этом списке (он нужен для сборки)
 
-          # Для structure.txt и combined_sources.txt дополнительно исключаем App.config
-          $ExcludedFilesForTree = $ExcludedFiles + @('App.config', 'app.config', 'App.Config')
+          # Для structure.txt и combined_sources.txt исключаем также AssemblyInfo.cs и App.config
+          $ExcludedFilesForTree = $ExcludedFiles + @(
+              'AssemblyInfo.cs',
+              'App.config', 'app.config', 'App.Config'
+          )
 
           Write-Host "Starting source collection..."
 
@@ -86,7 +89,7 @@ jobs:
               Push-Location clone-temp
 
               # --------------------------------------------------------------
-              # 1. structure.txt (только .cs и .csproj, исключая App.config)
+              # 1. structure.txt (только .cs и .csproj, исключая служебные файлы)
               # --------------------------------------------------------------
               function Write-Tree {
                   param([string]$Path, [string]$Indent = "")
@@ -116,10 +119,10 @@ jobs:
               $treeLines += Write-Tree -Path (Get-Location).Path
               $treeFile = "$destDir/${filePrefix}_structure.txt"
               $treeLines | Out-File -FilePath $treeFile -Encoding utf8
-              Write-Host "  → structure.txt generated (only .cs, .csproj, without App.config)"
+              Write-Host "  → structure.txt generated (only .cs, .csproj, without service files)"
 
               # --------------------------------------------------------------
-              # 2. combined_sources.txt (только .cs и .csproj, исключая App.config)
+              # 2. combined_sources.txt (только .cs и .csproj, исключая служебные)
               # --------------------------------------------------------------
               Write-Host "  → creating combined_sources.txt..."
               
@@ -128,7 +131,6 @@ jobs:
                       ($_.Extension -eq '.cs' -or $_.Extension -eq '.csproj') -and
                       $ExcludedDirs -notcontains $_.Directory.Name -and
                       $ExcludedFilesForTree -notcontains $_.Name -and
-                      $_.FullName -notmatch "\\Properties\\" -and
                       $_.FullName -notmatch "\\bin\\" -and
                       $_.FullName -notmatch "\\obj\\"
                   }
@@ -173,12 +175,12 @@ jobs:
               
               $combinedFile = "$destDir/${filePrefix}_combined_sources.txt"
               $combinedContent -join "`r`n" | Out-File -FilePath $combinedFile -Encoding utf8
-              Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count), without App.config)"
+              Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count), without service files)"
 
               # --------------------------------------------------------------
-              # 3. Копирование структуры проекта (включая .config файлы, но без packages.config)
+              # 3. Копирование полной структуры проекта (включая Properties и AssemblyInfo.cs)
               # --------------------------------------------------------------
-              Write-Host "  → copying project structure with folders (including App.config)..."
+              Write-Host "  → copying project structure with folders (including AssemblyInfo.cs)..."
               
               $filesToCopy = Get-ChildItem -Recurse -File |
                   Where-Object {
@@ -209,7 +211,7 @@ jobs:
                   Copy-Item -Path $file.FullName -Destination $targetPath -Force
               }
               
-              Write-Host "  → copied project structure: $($filesToCopy.Count) files (folders preserved, App.config included)"
+              Write-Host "  → copied project structure: $($filesToCopy.Count) files (folders preserved, including Properties/AssemblyInfo.cs)"
               Write-Host "  → structure and combined sources saved in $destDir"
 
               Pop-Location
