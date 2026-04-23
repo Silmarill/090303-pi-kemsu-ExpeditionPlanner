@@ -86,7 +86,9 @@ jobs:
                   }
               }
 
-              $treeLines = @("Структура репозитория: $branch", "=" * 60, "")
+              # ИСПРАВЛЕНИЕ: разделитель вынесен в отдельную переменную
+              $separator = '=' * 60
+              $treeLines = @("Структура репозитория: $branch", $separator, "")
               $treeLines += Write-Tree -Path (Get-Location).Path
               $treeLines | Out-File -FilePath "$destDir/structure.txt" -Encoding utf8
               Write-Host "  → structure.txt сгенерирован"
