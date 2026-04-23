@@ -20,7 +20,8 @@ namespace ExpeditionPlanner.Factories {
     }
 
     public override Mission CreateMission() {
-      int randomIndex = _random.Next(_factories.Count);
+      int randomIndex;
+      randomIndex = _random.Next(_factories.Count);
       return _factories[randomIndex].CreateMission();
     }
   }
