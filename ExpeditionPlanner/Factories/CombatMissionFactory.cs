@@ -2,9 +2,9 @@
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
-  public class DiplomaticMissionFactory : MissionFactory {
+  public class CombatMissionFactory : MissionFactory {
     public override Mission CreateMission() {
-      return new DiplomaticMission();
+      return new CombatMission();
     }
   }
 }

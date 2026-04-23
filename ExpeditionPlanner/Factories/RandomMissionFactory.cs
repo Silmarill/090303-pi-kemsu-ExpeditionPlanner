@@ -7,11 +7,20 @@ namespace ExpeditionPlanner.Factories {
     private List<MissionFactory> _factories;
     private Random _random;
 
-    RandomMissionFactory() {
-
+    public RandomMissionFactory() {
+      _random = new Random();
+      _factories = new List<MissionFactory>() {
+        new CombatMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new ExplorationMissionFactory(),
+        new RescueMissionFactory(150)
+      };
     }
 
     public override Mission CreateMission() {
+      int randomIndex = _random.Next(_factories.Count);
+      MissionFactory selectedFactory = _factories[randomIndex];
+      return selectedFactory.CreateMission();
     }
   }
 }
