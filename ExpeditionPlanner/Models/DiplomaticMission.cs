@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Models {
-  internal class DiplomaticMission : Mission {
+  public class DiplomaticMission : Mission {
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
       Duration = 20;

@@ -2,7 +2,7 @@
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    private readonly int _peopleCount;
+    private int _peopleCount;
 
     public RescueMissionFactory(int peopleCount) {
       _peopleCount = peopleCount;
