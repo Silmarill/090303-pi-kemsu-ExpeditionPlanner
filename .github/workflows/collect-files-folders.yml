@@ -35,40 +35,32 @@ jobs:
           # Расширения файлов, которые нужно скопировать (сохраняем структуру)
           $SourceExtensions = @('.cs', '.csproj', '.sln', '.slnx')
 
-          # Список исключаемых папок и файлов
+          # Основной список исключаемых папок (для всех этапов)
           $ExcludedDirs = @(
-              '.vscode',      # VS Code настройки
-              '.git',         # Git служебная папка
-              'Properties',   # AssemblyInfo.cs и другие свойства проекта
-              'bin',          # Скомпилированные бинарные файлы
-              'obj',          # Объектные файлы и временные файлы сборки
-              'packages',     # NuGet пакеты
-              'node_modules', # Node.js модули (если есть)
-              '.vs',          # Visual Studio служебная папка
-              'resources',    # Если содержит только ресурсы, не исходники
-              'Assets',       # Если содержит только ассеты, не исходники
-              '.github'       # GitHub workflow файлы
+              '.vscode', '.git', 'Properties', 'bin', 'obj', 'packages',
+              'node_modules', '.vs', 'resources', 'Assets', '.github'
           )
 
+          # Основной список исключаемых файлов (для копирования структуры).
+          # App.config здесь НЕ исключается — он нужен для сборки проекта.
           $ExcludedFiles = @(
-              'App.config',       # Конфигурация приложения
-              'app.config',       # Альтернативный регистр
-              'App.Config',       # Другой вариант регистра
               'packages.config',  # NuGet конфигурация
-              'AssemblyInfo.cs',  # Информация о сборке (служебный)
-              '.editorconfig',    # Настройки редактора (служебный)
+              'AssemblyInfo.cs',  # Информация о сборке
+              '.editorconfig',    # Настройки редактора
               '.gitattributes',   # Git настройки
               '.gitignore',       # Git настройки
-              'LICENSE',          # Лицензия (не исходный код)
-              'LICENSE.md',       # Лицензия в Markdown
-              'README.md',        # Документация (не исходный код)
-              'README.txt',       # Документация
+              'LICENSE',          # Лицензия
+              'LICENSE.md',
+              'README.md',
+              'README.txt',
               '.yml'              # Workflow-файлы
           )
 
+          # Для structure.txt и combined_sources.txt дополнительно исключаем App.config
+          $ExcludedFilesForTree = $ExcludedFiles + @('App.config', 'app.config', 'App.Config')
+
           Write-Host "Starting source collection..."
 
-          # Получаем список веток
           git fetch --all
           $branches = git branch -r |
               Where-Object { $_ -match "origin/($BranchPattern)$" } |
@@ -86,22 +78,18 @@ jobs:
               Write-Host "[$index/$total] Collecting branch: $branch"
               Write-Host "========================================"
 
-              # Имя папки: "/" -> "_"
               $branchSafe = $branch -replace '/', '_'
               $destDir    = "$outRoot/$branchSafe"
               New-Item -Path $destDir -ItemType Directory -Force | Out-Null
-              
-              # Префикс для файлов с именем ветки
               $filePrefix = "_${branchSafe}"
 
-              # Клонируем ветку студента
               git clone --depth 1 --branch $branch `
                   "https://x-access-token:$PatToken@github.com/$Repository" `
                   clone-temp
               Push-Location clone-temp
 
               # --------------------------------------------------------------
-              # 1. Генерируем structure.txt (только .cs и .csproj)
+              # 1. structure.txt (только .cs и .csproj, исключая App.config)
               # --------------------------------------------------------------
               function Write-Tree {
                   param(
@@ -112,7 +100,7 @@ jobs:
                       Where-Object { 
                           $_.Name -ne '.git' -and
                           $ExcludedDirs -notcontains $_.Name -and
-                          $ExcludedFiles -notcontains $_.Name
+                          $ExcludedFilesForTree -notcontains $_.Name
                       } |
                       Sort-Object { $_.PSIsContainer } -Descending |
                       Sort-Object Name
@@ -121,9 +109,8 @@ jobs:
                           "$Indent$($item.Name)/"
                           Write-Tree -Path $item.FullName -Indent "$Indent    "
                       } else {
-                          # Показываем только .cs и .csproj
                           if (($item.Extension -eq '.cs' -or $item.Extension -eq '.csproj') -and
-                              $ExcludedFiles -notcontains $item.Name) {
+                              $ExcludedFilesForTree -notcontains $item.Name) {
                               "$Indent$($item.Name)"
                           }
                       }
@@ -135,10 +122,10 @@ jobs:
               $treeLines += Write-Tree -Path (Get-Location).Path
               $treeFile = "$destDir/${filePrefix}_structure.txt"
               $treeLines | Out-File -FilePath $treeFile -Encoding utf8
-              Write-Host "  → structure.txt generated (only .cs, .csproj)"
+              Write-Host "  → structure.txt generated (only .cs, .csproj, without App.config)"
 
               # --------------------------------------------------------------
-              # 2. Создаем combined_sources.txt (только .cs и .csproj)
+              # 2. combined_sources.txt (только .cs и .csproj, исключая App.config)
               # --------------------------------------------------------------
               Write-Host "  → creating combined_sources.txt..."
               
@@ -146,6 +133,7 @@ jobs:
                   Where-Object {
                       ($_.Extension -eq '.cs' -or $_.Extension -eq '.csproj') -and
                       $ExcludedDirs -notcontains $_.Directory.Name -and
+                      $ExcludedFilesForTree -notcontains $_.Name -and
                       $_.FullName -notmatch "\\Properties\\" -and
                       $_.FullName -notmatch "\\bin\\" -and
                       $_.FullName -notmatch "\\obj\\"
@@ -163,10 +151,7 @@ jobs:
                   -not $exclude
               }
               
-              function Get-PathDepth {
-                  param([string]$Path)
-                  return ($Path -split '\\').Count
-              }
+              function Get-PathDepth { param([string]$Path) { ($Path -split '\\').Count } }
               
               $sortedFiles = $sourceFilesForCombine | Sort-Object {
                   $depth = Get-PathDepth -Path $_.DirectoryName
@@ -180,8 +165,7 @@ jobs:
               
               foreach ($file in $sortedFiles) {
                   $relativePath = Resolve-Path -Relative $file.FullName
-                  $relativePath = $relativePath -replace '^\.\\', ''
-                  $relativePath = $relativePath -replace '\\', '/'
+                  $relativePath = $relativePath -replace '^\.\\', '' -replace '\\', '/'
                   $combinedContent += "=== File: $relativePath ==="
                   try {
                       $content = Get-Content $file.FullName -Raw -Encoding UTF8
@@ -195,18 +179,18 @@ jobs:
               
               $combinedFile = "$destDir/${filePrefix}_combined_sources.txt"
               $combinedContent -join "`r`n" | Out-File -FilePath $combinedFile -Encoding utf8
-              Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count))"
+              Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count), without App.config)"
 
               # --------------------------------------------------------------
-              # 3. Копируем исходную структуру проекта (с сохранением путей)
+              # 3. Копирование структуры проекта (включая App.config)
               # --------------------------------------------------------------
-              Write-Host "  → copying project structure with folders..."
+              Write-Host "  → copying project structure with folders (including App.config)..."
               
               $filesToCopy = Get-ChildItem -Recurse -File |
                   Where-Object {
                       $SourceExtensions -contains $_.Extension.ToLower() -and
                       $ExcludedDirs -notcontains $_.Directory.Name -and
-                      $ExcludedFiles -notcontains $_.Name
+                      $ExcludedFiles -notcontains $_.Name   # <-- здесь App.config не исключается
                   } |
                   Where-Object {
                       $fullPath = $_.FullName
@@ -231,7 +215,7 @@ jobs:
                   Copy-Item -Path $file.FullName -Destination $targetPath -Force
               }
               
-              Write-Host "  → copied project structure: $($filesToCopy.Count) files (folders preserved)"
+              Write-Host "  → copied project structure: $($filesToCopy.Count) files (folders preserved, App.config included)"
               Write-Host "  → structure and combined sources saved in $destDir"
 
               Pop-Location
