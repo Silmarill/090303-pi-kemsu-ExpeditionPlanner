@@ -1,14 +1,12 @@
-﻿using ExpeditionPlanner.Models;
-using System;
+﻿using System;
+using ExpeditionPlanner.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _factories;
-    private Random _random = new Random();
+    private readonly List<MissionFactory> _factories;
+    private readonly Random _random = new Random();
+    private readonly int _defaultRescueCapacity = 50;
 
     public RandomMissionFactory() {
       _factories = new List<MissionFactory>();
@@ -16,7 +14,7 @@ namespace ExpeditionPlanner.Factories {
       _factories.Add(new CombatMissionFactory());
       _factories.Add(new CargoMissionFactory());
       _factories.Add(new DiplomaticMissionFactory());
-      _factories.Add(new RescueMissionFactory(50));
+      _factories.Add(new RescueMissionFactory(_defaultRescueCapacity));
     }
 
     public override Mission CreateMission() {

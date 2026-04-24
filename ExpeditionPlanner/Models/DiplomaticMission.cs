@@ -1,22 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpeditionPlanner.Models {
-  internal class DiplomaticMission : Mission {
+  public class DiplomaticMission : Mission {
+    private readonly int _durationDays = 20;
+    private readonly int _tradeAgreementsCount = 3;
+
     public DiplomaticMission() {
-      Name = "Дипломатическая экспедиция";
-      Duration = 25;
+      Name = "Дипломатическая миссия";
+      Duration = _durationDays;
     }
 
     public override void Execute() {
-      Console.WriteLine("Ведение переговоров с инопланетной цивилизацией, подписание мирного договора");
+      // бизнес-логика
     }
 
     public override string GetReport() {
-      return "Дипломатическая экспедиция: установлены дипломатические отношения с 4 цивилизациями";
+      return $"Дипломатическая миссия: заключено {_tradeAgreementsCount} торговых соглашения";
+    }
+
+    public string GetExecutionMessage() {
+      return "Переговоры с инопланетной цивилизацией, подписание договора";
     }
   }
 }
