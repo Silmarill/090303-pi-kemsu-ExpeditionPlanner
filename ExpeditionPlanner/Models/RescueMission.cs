@@ -2,12 +2,14 @@ using System;
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
+    private const int BaseDuration = 5;
+    private const int PeoplePerExtraDay = 10;
     private int _peopleCount;
 
-    public RescueMission(int peopleCount) {
-      _peopleCount = peopleCount;
-      Name = "Спасательная миссия";
-      Duration = 5 + _peopleCount / 10;
+    public RescueMission(int _peopleCount) {
+      this._peopleCount = _peopleCount;
+      Name = "🚀 Спасательная миссия";
+      Duration = BaseDuration + this._peopleCount / PeoplePerExtraDay;
     }
 
     public override void Execute() {
