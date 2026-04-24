@@ -1,22 +1,21 @@
-﻿using ExpeditionPlanner.Models;
-using System;
+﻿using System;
+using ExpeditionPlanner.Models;
 using System.Collections.Generic;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _factories;
-    private Random _random = new Random();
-
-    private int _defaultRescueCrewCapacity = 50;
+    private readonly List<MissionFactory> _factories;
+    private readonly Random _random = new Random();
+    private readonly int _defaultRescueCrewCapacity = 50;
 
     public RandomMissionFactory() {
-      _factories = new List<MissionFactory>();
-
-      _factories.Add(new CargoMissionFactory());
-      _factories.Add(new CombatMissionFactory());
-      _factories.Add(new ExplorationMissionFactory());
-      _factories.Add(new RescueMissionFactory(_defaultRescueCrewCapacity));
-      _factories.Add(new DiplomaticMissionFactory());
+      _factories = new List<MissionFactory> {
+        new CargoMissionFactory(),
+        new CombatMissionFactory(),
+        new ExplorationMissionFactory(),
+        new RescueMissionFactory(_defaultRescueCrewCapacity),
+        new DiplomaticMissionFactory()
+      };
     }
 
     public override Mission CreateMission() {

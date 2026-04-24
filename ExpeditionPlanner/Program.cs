@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
-// Обратите внимание на совпадение пространств имен и папок
 using ExpeditionPlanner.Models;
 using ExpeditionPlanner.Factories;
 
 namespace ExpeditionPlanner {
   internal class Program {
-    private static int _rescueCrewCapacity = 50;
-    static void Main() {
-      // Создаём фабрики разных типов
-      List<MissionFactory> factories = new List<MissionFactory>
-      {
+    private static readonly int _rescueCrewCapacity = 50;
+    private static void Main() {
+      List<MissionFactory> factories = new List<MissionFactory> {
         new ExplorationMissionFactory(),
         new CombatMissionFactory(),
         new CargoMissionFactory(),
@@ -31,11 +27,6 @@ namespace ExpeditionPlanner {
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();
       }
-
-      // Легко добавить новую миссию, не меняя существующий код!
-      //MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
-      //Mission diplomaticMission = newFactory.CreateMission();
-      //diplomaticMission.Execute();
     }
   }
 }
