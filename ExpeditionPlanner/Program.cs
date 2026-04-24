@@ -5,14 +5,20 @@ using ExpeditionPlanner.Models;
 namespace ExpeditionPlanner {
   public class Program
   {
-    public static void Main(string[] args)
-    {
+    public static void Main(string[] args) {
       Console.WriteLine("=== Планировщик экспедиций ===\n");
 
       MissionFactory factory = new RandomMissionFactory();
 
-      for (int i = 1; i <= 5; ++i) {
-        Console.WriteLine($"--- Миссия {i} ---");
+      int quantityMission;
+      quantityMission = 5;
+      int counterI;
+      counterI = 1;
+      int num;
+      num = 1;
+
+      for (num = counterI; num <= quantityMission; ++num) {
+        Console.WriteLine($"--- Миссия {num} ---");
         Mission mission = factory.CreateMission();
 
         Console.WriteLine($"Название: {mission.Name}");

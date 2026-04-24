@@ -1,18 +1,16 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
+    private int _tradeAgreementsCount;
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
       Duration = 2;
+      _tradeAgreementsCount = 0;
     }
-
     public override void Execute() {
-      Console.WriteLine("Переговоры с инопланетной цивилизацией, подписание договора");
+      _tradeAgreementsCount = 3;
     }
-
     public override string GetReport() {
-      return $"{Name}: заключено 3 торговых соглашения";
+      return $"{Name}: заключено {_tradeAgreementsCount} торговых соглашения";
     }
   }
 }
