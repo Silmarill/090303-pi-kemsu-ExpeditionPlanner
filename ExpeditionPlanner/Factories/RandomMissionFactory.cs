@@ -7,19 +7,20 @@ namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
     private List<MissionFactory> _factories;
     private Random _random = new Random();
+    private int _countOfPeopleForRescueMission = 50;
 
     // Конструктор, который инициализирует список фабрик для создания различных типов миссий
     public RandomMissionFactory() {
       _factories = new List<MissionFactory>
       {
-                new ExplorationMissionFactory(),
-                new CombatMissionFactory(),
-                new CargoMissionFactory(),
-                new DiplomaticMissionFactory(),
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
 
-                // Используется фабрика из Задания 2
-                new RescueMissionFactory(50)
-            };
+        // Используется фабрика из Задания 2
+        new RescueMissionFactory(_countOfPeopleForRescueMission)
+      };
     }
 
     // Метод, который создает случайную миссию, выбирая случайную фабрику из списка и вызывая ее метод CreateMission

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ExpeditionPlanner.Factories;
 using ExpeditionPlanner.Models;
-using ExpeditionPlanner.Factories;
+using System;
+using System.Collections.Generic;
 
 namespace ExpeditionPlanner {
   internal class Program {
@@ -15,17 +15,16 @@ namespace ExpeditionPlanner {
         new RandomMissionFactory()
       };
 
-      Console.WriteLine("=== Mission plan for the month ===\n");
+      Console.WriteLine("=== План миссии на месяц ===\n");
 
       // Выполнение миссий, созданных фабриками
       foreach (MissionFactory factory in factories) {
         // Создание миссии через фабрику
         Mission mission;
-
         mission = factory.CreateMission();
 
         // Выполнение миссии и вывод отчета
-        Console.WriteLine($"Mission: {mission.Name} (duration: {mission.Duration} days)");
+        Console.WriteLine($"Миссия: {mission.Name} (продолжительность: {mission.Duration} дней");
         mission.Execute();
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();

@@ -4,15 +4,15 @@ namespace ExpeditionPlanner.Models {
   // Класс для спасательных миссий, которые могут быть частью экспедиции
   public class RescueMission : Mission {
     private int _peopleCount;
-    private int BaseRescueDays = 5;
-    private int PeoplePerExtraDay = 10;
+    private int _baseRescueDays = 5;
+    private int _peoplePerExtraDay = 10;
 
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
 
       // Чем больше людей — тем дольше
-      Duration = BaseRescueDays + peopleCount / PeoplePerExtraDay;
+      Duration = _baseRescueDays + peopleCount / _peoplePerExtraDay;
     }
 
     // Выводит информацию о спасении людей
