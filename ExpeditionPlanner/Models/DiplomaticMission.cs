@@ -4,8 +4,8 @@
       Name = "Дипломатическая миссия";
       Duration = 20;
     }
-    public override void Execute() {
 
+    public override void Execute() {
     }
 
     public override string GetReport() {

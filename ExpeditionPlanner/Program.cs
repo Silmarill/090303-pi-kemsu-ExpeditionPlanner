@@ -21,6 +21,7 @@ namespace ExpeditionPlanner {
         if (!string.IsNullOrEmpty(actionMessage)) {
           Console.WriteLine(actionMessage);
         }
+
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();
       }
