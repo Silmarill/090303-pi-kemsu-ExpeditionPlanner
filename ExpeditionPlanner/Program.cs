@@ -6,12 +6,9 @@ using ExpeditionPlanner.Factories;
 // Обратите внимание на совпадение пространств имен и папок
 using ExpeditionPlanner.Models;
 
-namespace ExpeditionPlanner
-{
-  internal class Program
-  {
-    private static void Main()
-    {
+namespace ExpeditionPlanner {
+  internal class Program {
+    private static void Main() {
       Console.OutputEncoding = Encoding.UTF8;
 
       int defaultEvacuationPeopleCount;
@@ -48,8 +45,7 @@ namespace ExpeditionPlanner
       explorationNewStarSystems = 5;
 
       List<MissionFactory> factories;
-      factories = new List<MissionFactory>
-      {
+      factories = new List<MissionFactory> {
         new ExplorationMissionFactory(explorationMissionDurationDays, explorationNewStarSystems),
         new CombatMissionFactory(combatMissionDurationDays, combatDestroyedEnemyShips),
         new CargoMissionFactory(cargoMissionDurationDays, cargoDeliveredTons),
@@ -74,8 +70,7 @@ namespace ExpeditionPlanner
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
-      for (int missionFactoryIndex = 0; missionFactoryIndex < factories.Count; ++missionFactoryIndex)
-      {
+      for (int missionFactoryIndex = 0; missionFactoryIndex < factories.Count; ++missionFactoryIndex) {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа — метод у всех одинаковый
         MissionFactory factory;
         factory = factories[missionFactoryIndex];
