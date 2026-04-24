@@ -18,3 +18,23 @@ dotnet_naming_rule.local_variables_rule.severity = error
 csharp_style_var_for_built_in_types = false:error
 csharp_style_var_when_type_is_apparent = false:error
 csharp_style_var_elsewhere = false:error
+# Поля с подчёркиванием разрешены (_factories, _random, _peopleCount)
+dotnet_diagnostic.SA1309.severity = none
+
+# Префикс this. не обязателен
+dotnet_diagnostic.SA1101.severity = none
+
+# using могут быть вне namespace
+dotnet_diagnostic.SA1200.severity = none
+
+# Заголовок файла не обязателен
+dotnet_diagnostic.SA1633.severity = none
+
+# Скобки в стиле OTBS (на той же строке)
+dotnet_diagnostic.SA1500.severity = none
+
+# XML-комментарии не обязательны
+dotnet_diagnostic.SA0001.severity = none
+
+# Первичные конструкторы
+dotnet_diagnostic.IDE0290.severity = none
