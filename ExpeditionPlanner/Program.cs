@@ -9,9 +9,8 @@ namespace ExpeditionPlanner {
   internal class Program {
     private static void Main() {
       // Создаём фабрики разных типов
-      List<MissionFactory> factories = new List<MissionFactory>
-      {
-        new RandomMissionFactory() 
+      List<MissionFactory> factories = new List<MissionFactory> {
+        new RandomMissionFactory()
       };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
