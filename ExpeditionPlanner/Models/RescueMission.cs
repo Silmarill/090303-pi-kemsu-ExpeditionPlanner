@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private const int BaseDurationDays = 5;
     private const int PeoplePerExtraDay = 10;
@@ -13,7 +7,7 @@ namespace ExpeditionPlanner.Models {
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = BaseDurationDays + ( _peopleCount / PeoplePerExtraDay );
+      Duration = BaseDurationDays + (_peopleCount / PeoplePerExtraDay);
     }
 
     public override string Execute() {

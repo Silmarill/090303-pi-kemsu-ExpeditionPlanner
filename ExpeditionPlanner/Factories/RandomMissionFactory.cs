@@ -1,6 +1,6 @@
-﻿using ExpeditionPlanner.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {

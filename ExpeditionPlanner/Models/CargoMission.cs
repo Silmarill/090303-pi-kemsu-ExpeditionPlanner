@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
     private const int DefaultDurationDays = 10;
 
