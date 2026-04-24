@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 // Обратите внимание на совпадение пространств имен и папок
 using ExpeditionPlanner.Models;

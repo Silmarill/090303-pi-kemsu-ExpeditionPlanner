@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public abstract class Mission {
     public string Name;
     public int Duration; // в днях

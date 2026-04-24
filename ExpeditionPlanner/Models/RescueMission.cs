@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private const int baseDurationDays = 5;
     private const int peoplePerAdditionalDay = 10;

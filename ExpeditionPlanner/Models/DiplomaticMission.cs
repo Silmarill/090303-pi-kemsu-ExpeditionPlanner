@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
     private const int diplomaticMissionDurationDays = 20;
     public DiplomaticMission() {

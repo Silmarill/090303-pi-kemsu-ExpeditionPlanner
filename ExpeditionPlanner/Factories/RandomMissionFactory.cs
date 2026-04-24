@@ -9,12 +9,13 @@ namespace ExpeditionPlanner.Factories {
     private const int rescueMissionPeopleSave = 50;
 
     public RandomMissionFactory() {
-      _factories = new List<MissionFactory>();
-      _factories.Add(new ExplorationMissionFactory());
-      _factories.Add(new CombatMissionFactory());
-      _factories.Add(new CargoMissionFactory());
-      _factories.Add(new DiplomaticMissionFactory());
-      _factories.Add(new RescueMissionFactory(rescueMissionPeopleSave));
+      _factories = new List<MissionFactory>() {
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(rescueMissionPeopleSave)
+      };
 
       _random = new Random();
     }
