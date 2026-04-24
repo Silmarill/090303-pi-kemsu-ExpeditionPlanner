@@ -11,7 +11,8 @@ namespace ExpeditionPlanner {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
-        new RandomMissionFactory() };
+        new RandomMissionFactory() 
+      };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
@@ -26,12 +27,9 @@ namespace ExpeditionPlanner {
       }
 
       // Легко добавить новую миссию, не меняя существующий код!
-
-      //MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
-
-      //Mission diplomaticMission = newFactory.CreateMission();
-
-      //diplomaticMission.Execute();
+      // MissionFactory newFactory = new DiplomaticMissionFactory(); // придумаем позже
+      // Mission diplomaticMission = newFactory.CreateMission();
+      // diplomaticMission.Execute();
     }
   }
 }
