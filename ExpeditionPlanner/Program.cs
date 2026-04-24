@@ -7,7 +7,7 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   public class Program {
-    private static readonly int _testPeopleCount = 50;
+    public static int TestPeopleCount = 50;
 
     public static void Main() {
       // Создаём фабрики разных типов
@@ -17,7 +17,7 @@ namespace ExpeditionPlanner {
         new CombatMissionFactory(),
         new CargoMissionFactory(),
         new DiplomaticMissionFactory(),
-        new RescueMissionFactory(_testPeopleCount),
+        new RescueMissionFactory(TestPeopleCount),
         new RandomMissionFactory()
       };
 
