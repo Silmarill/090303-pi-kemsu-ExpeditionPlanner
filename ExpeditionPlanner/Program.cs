@@ -11,12 +11,11 @@ namespace ExpeditionPlanner {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
-          new RandomMissionFactory()
-        };
+        new RandomMissionFactory() };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
 
-      foreach (var factory in factories) {
+      foreach (MissionFactory factory in factories) {
         // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
         Mission mission = factory.CreateMission();
 
