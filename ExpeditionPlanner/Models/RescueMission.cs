@@ -2,18 +2,17 @@
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    public int BaseDuration;
-    public int PeopleDivider;
+    public int baseDuration;
+    public int peopleDivider;
 
-    private int _peopleCount;
+    private readonly int _peopleCount;
 
     public RescueMission(int peopleCount) {
-      BaseDuration = 5;
-      PeopleDivider = 10;
+      baseDuration = 5;
+      peopleDivider = 10;
 
-      _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = BaseDuration + peopleCount / PeopleDivider;
+      Duration = (baseDuration + peopleCount) / peopleDivider;
     }
 
     public override void Execute() {

@@ -4,7 +4,7 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   internal class Program {
-    static void Main() {
+    private static void Main() {
       int missionCount = 5;
       int startNumber = 1;
       MissionFactory randomFactory = new RandomMissionFactory();
