@@ -15,11 +15,12 @@ namespace ExpeditionPlanner {
       int missionCount = 5;
 
       for (int missionIndex = 0; missionIndex < missionCount; ++missionIndex) {
-        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метож у всех одинаковый
+        // Фабричный метод создаёт миссию, но мы не знаем, какого именно типа - метод у всех одинаковый
         Mission mission = randomFactory.CreateMission();
+        string executionResult = mission.Execute();
 
         Console.WriteLine($"Миссия: {mission.Name} (длительность: {mission.Duration} дней)");
-        mission.Execute();
+        Console.WriteLine(executionResult);
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();
       }

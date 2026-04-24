@@ -6,13 +6,15 @@ namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
     private List<MissionFactory> _factories;
     private Random _random;
+    private const int rescueMissionPeopleSave = 50;
 
     public RandomMissionFactory() {
       _factories = new List<MissionFactory>();
       _factories.Add(new ExplorationMissionFactory());
       _factories.Add(new CombatMissionFactory());
       _factories.Add(new CargoMissionFactory());
-      _factories.Add(new RescueMissionFactory(50));
+      _factories.Add(new DiplomaticMissionFactory());
+      _factories.Add(new RescueMissionFactory(rescueMissionPeopleSave));
 
       _random = new Random();
     }
