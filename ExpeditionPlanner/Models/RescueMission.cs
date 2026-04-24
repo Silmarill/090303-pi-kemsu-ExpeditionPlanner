@@ -3,11 +3,13 @@
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private readonly int _peopleCount;
+    private readonly int _baseDurationDays = 5;
+    private readonly int _peoplePerAdditionalDay;
 
     public RescueMission(int peopleCount) {
       _name = "Спасательная миссия";
       _peopleCount = peopleCount;
-      Duration = 5 + (peopleCount / 10);
+      Duration = _baseDurationDays + (peopleCount / _peoplePerAdditionalDay);
     }
 
     public override void Execute() {
