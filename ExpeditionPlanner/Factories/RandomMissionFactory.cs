@@ -12,12 +12,12 @@ namespace ExpeditionPlanner.Factories {
     public RandomMissionFactory(int rescuePeopleCount) {
       _availableFactories = new List<MissionFactory>
       {
-                new ExplorationMissionFactory(),
-                new CombatMissionFactory(),
-                new CargoMissionFactory(),
-                new DiplomaticMissionFactory(),
-                new RescueMissionFactory(rescuePeopleCount)
-            };
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(rescuePeopleCount)
+      };
 
       _randomGenerator = new Random();
     }
