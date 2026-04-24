@@ -2,6 +2,8 @@
 
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
+    private readonly int _numberOfTradeAgreementsConcluded = 3;
+
     public DiplomaticMission() {
       _name = "Дипломатическая миссия";
       Duration = 20;
@@ -12,7 +14,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" {_name}: заключено 3 торговых соглашения";
+      return $" {_name}: заключено {_numberOfTradeAgreementsConcluded} торговых соглашения";
     }
   }
 }
