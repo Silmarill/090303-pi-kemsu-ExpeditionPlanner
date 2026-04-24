@@ -38,3 +38,5 @@ dotnet_diagnostic.SA0001.severity = none
 
 # Первичные конструкторы
 dotnet_diagnostic.IDE0290.severity = none
+# Упрощение коллекций (new List<> → [])
+dotnet_diagnostic.IDE0028.severity = none
