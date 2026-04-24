@@ -4,7 +4,7 @@ namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private const int BaseDuration = 5;
     private const int PeoplePerExtraDay = 10;
-    private int _peopleCount;
+    private readonly int _peopleCount;
 
     public RescueMission(int _peopleCount) {
       this._peopleCount = _peopleCount;

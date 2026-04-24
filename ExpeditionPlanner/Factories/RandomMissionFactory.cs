@@ -4,8 +4,8 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _factories;
-    private Random _random;
+    private readonly List<MissionFactory> _factories;
+    private readonly Random _random;
 
     public RandomMissionFactory() {
       _random = new Random();
