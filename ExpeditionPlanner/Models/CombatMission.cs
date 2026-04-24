@@ -1,12 +1,12 @@
-﻿namespace ExpeditionPlanner.Models {
-  using System;
+﻿using System;
 
+namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
-    private readonly int _destroyedEnemyShips;
+    private int _destroyedEnemyShips;
 
     public CombatMission(int duration, int destroyedEnemyShips) {
-      this.Name = "Боевая миссия";
-      this.Duration = duration;
+      Name = "Боевая миссия";
+      Duration = duration;
       _destroyedEnemyShips = destroyedEnemyShips;
     }
 

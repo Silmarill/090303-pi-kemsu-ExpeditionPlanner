@@ -1,10 +1,10 @@
-﻿namespace ExpeditionPlanner.Factories {
-  using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Models;
 
+namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    private readonly int _peopleCount;
-    private readonly int _basePreparationDays;
-    private readonly int _peoplePerDay;
+    private int _peopleCount;
+    private int _basePreparationDays;
+    private int _peoplePerDay;
 
     public RescueMissionFactory(int peopleCount, int basePreparationDays, int peoplePerDay) {
       _peopleCount = peopleCount;

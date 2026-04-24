@@ -1,11 +1,11 @@
-﻿namespace ExpeditionPlanner.Factories {
-  using System;
-  using System.Collections.Generic;
-  using ExpeditionPlanner.Models;
+﻿using System;
+using System.Collections.Generic;
+using ExpeditionPlanner.Models;
 
+namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private readonly List<MissionFactory> _factories;
-    private readonly Random _random = new Random();
+    private List<MissionFactory> _factories;
+    private Random _random = new Random();
 
     public RandomMissionFactory(
         int defaultEvacuationPeopleCount,

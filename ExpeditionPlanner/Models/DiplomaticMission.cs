@@ -1,12 +1,12 @@
-﻿namespace ExpeditionPlanner.Models {
-  using System;
+﻿using System;
 
+namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
-    private readonly int _tradeAgreements;
+    private int _tradeAgreements;
 
     public DiplomaticMission(int duration, int tradeAgreements) {
-      this.Name = "Дипломатическая миссия";
-      this.Duration = duration;
+      Name = "Дипломатическая миссия";
+      Duration = duration;
       _tradeAgreements = tradeAgreements;
     }
 

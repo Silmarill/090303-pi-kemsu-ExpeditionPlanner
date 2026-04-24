@@ -1,12 +1,12 @@
-﻿namespace ExpeditionPlanner.Models {
-  using System;
+﻿using System;
 
+namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
-    private readonly int _deliveredTons;
+    private int _deliveredTons;
 
     public CargoMission(int duration, int deliveredTons) {
-      this.Name = "Грузовая миссия";
-      this.Duration = duration;
+      Name = "Грузовая миссия";
+      Duration = duration;
       _deliveredTons = deliveredTons;
     }
 

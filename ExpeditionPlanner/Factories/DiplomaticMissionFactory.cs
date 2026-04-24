@@ -1,9 +1,9 @@
-﻿namespace ExpeditionPlanner.Factories {
-  using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Models;
 
+namespace ExpeditionPlanner.Factories {
   public class DiplomaticMissionFactory : MissionFactory {
-    private readonly int _duration;
-    private readonly int _tradeAgreements;
+    private int _duration;
+    private int _tradeAgreements;
 
     public DiplomaticMissionFactory(int duration, int tradeAgreements) {
       _duration = duration;
