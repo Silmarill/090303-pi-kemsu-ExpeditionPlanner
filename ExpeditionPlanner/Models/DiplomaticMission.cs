@@ -4,6 +4,7 @@ namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
     private readonly int _defaultDurationMinutes = 30;
     private readonly int _defaultTradeAgreements = 3;
+
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
       Duration = _defaultDurationMinutes;
