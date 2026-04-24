@@ -1,8 +1,8 @@
 ﻿namespace ExpeditionPlanner.Models {
   public abstract class Mission {
-    public string Name;
+    public string Name { get; set; }
 
-    public int Duration; // в днях
+    public int Duration { get; set; }
 
     public abstract void Execute();
 
