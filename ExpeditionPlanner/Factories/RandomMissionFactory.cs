@@ -4,28 +4,27 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _factories;
-    private Random _random;
+    private List<MissionFactory> _availableFactories;
+    private Random _randomGenerator;
+    private int _rescuePeopleCount;
 
-    public RandomMissionFactory() {
-      int NumberOfPeople;
-      NumberOfPeople = 200;
-      _factories = new List<MissionFactory>();
-      _factories.Add(new ExplorationMissionFactory());
-      _factories.Add(new CombatMissionFactory());
-      _factories.Add(new CargoMissionFactory());
-      _factories.Add(new DiplomaticMissionFactory());
-      _factories.Add(new RescueMissionFactory(NumberOfPeople));
-      _random = new Random();
+    public RandomMissionFactory(int rescuePeopleCount) {
+      _rescuePeopleCount = rescuePeopleCount;
+      _availableFactories = new List<MissionFactory> {
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(_rescuePeopleCount)
+      };
+      _randomGenerator = new Random();
     }
 
     public override Mission CreateMission() {
-      int factoryIndex;
-      factoryIndex = _random.Next(_factories.Count);
-
-      MissionFactory selectedFactory = _factories[factoryIndex];
-      Mission newMission = selectedFactory.CreateMission();
-      return newMission;
+      int factoryIndex = _randomGenerator.Next(_availableFactories.Count);
+      MissionFactory chosenFactory = _availableFactories[factoryIndex];
+      Mission resultMission = chosenFactory.CreateMission();
+      return resultMission;
     }
   }
 }
