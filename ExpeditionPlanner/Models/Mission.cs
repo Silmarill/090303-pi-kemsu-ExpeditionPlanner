@@ -6,5 +6,6 @@ namespace ExpeditionPlanner.Models {
     public int Duration; // в днях
     public abstract void Execute();
     public abstract string GetReport();
+    public abstract string GetExecutionMessage();
   }
 }

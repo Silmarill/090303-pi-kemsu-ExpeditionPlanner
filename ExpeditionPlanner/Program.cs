@@ -5,22 +5,22 @@ using ExpeditionPlanner.Models;
 namespace ExpeditionPlanner {
   internal class Program {
     static void Main() {
-      int MissionCount;
-      int StartNumber;
-      MissionFactory randomFactory;
-
-      MissionCount = 5;
-      StartNumber = 1;
-      randomFactory = new RandomMissionFactory();
+      int missionCount = 5;
+      int startNumber = 1;
+      MissionFactory randomFactory = new RandomMissionFactory();
 
       Console.WriteLine("=== Случайные миссии экспедиции ===\n");
 
-      for (int missionNumber = StartNumber; missionNumber <= MissionCount; ++missionNumber) {
+      for (int missionNumber = startNumber; missionNumber <= missionCount; ++missionNumber) {
         Console.WriteLine($"--- Миссия #{missionNumber} ---");
         Mission mission = randomFactory.CreateMission();
         Console.WriteLine($"Название: {mission.Name}");
         Console.WriteLine($"Длительность: {mission.Duration} дней");
         mission.Execute();
+        string actionMessage = mission.GetExecutionMessage();
+        if (!string.IsNullOrEmpty(actionMessage)) {
+          Console.WriteLine(actionMessage);
+        }
         Console.WriteLine(mission.GetReport());
         Console.WriteLine();
       }
