@@ -10,8 +10,7 @@ namespace ExpeditionPlanner.Factories {
 
     public RandomMissionFactory() {
       _random = new Random();
-      _factories = new List<MissionFactory>
-      {
+      _factories = new List<MissionFactory> {
         new ExplorationMissionFactory(),
         new CombatMissionFactory(),
         new CargoMissionFactory(),
