@@ -1,6 +1,5 @@
 ﻿using ExpeditionPlanner.Models;
 
-
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
     private int _peopleCount;

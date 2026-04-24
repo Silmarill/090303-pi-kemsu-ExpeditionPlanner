@@ -2,7 +2,6 @@
 
 namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
-
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
       Duration = 20;
@@ -15,6 +14,5 @@ namespace ExpeditionPlanner.Models {
     public override string GetReport() {
       return $"{Name}: заключено 3 торговых соглашения";
     }
-
   }
 }

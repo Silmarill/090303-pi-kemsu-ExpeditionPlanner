@@ -1,5 +1,5 @@
-﻿using ExpeditionPlanner.Models;
-using System;
+﻿using System;
+using ExpeditionPlanner.Models;
 using System.Collections.Generic;
 
 namespace ExpeditionPlanner.Factories {
@@ -8,7 +8,6 @@ namespace ExpeditionPlanner.Factories {
     private Random _random = new Random();
 
     public RandomMissionFactory() {
-
       int rescueMissionSuccessChance = 50;
 
       _factories = new List<MissionFactory>();
