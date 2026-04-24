@@ -2,9 +2,10 @@
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    public int peopleCount = 50;
+    public int PeopleCount = 50;
+
     public override Mission CreateMission() {
-      return new RescueMission(peopleCount);
+      return new RescueMission(PeopleCount);
     }
   }
 }

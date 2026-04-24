@@ -2,9 +2,10 @@
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    private int _peopleCount;
     public int baseDurationDays = 5;
     public int peoplePerExtraDay = 10;
+    private readonly int _peopleCount;
+
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
