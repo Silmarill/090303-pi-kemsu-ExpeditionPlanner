@@ -1,4 +1,4 @@
-﻿using ExpeditionPlanner.Factories;
+using ExpeditionPlanner.Factories;
 using ExpeditionPlanner.Models;
 using System;
 using System.Collections.Generic;

@@ -1,9 +1,16 @@
 <Solution>
   <Folder Name="/Элементы решения/">
     <File Path=".editorconfig" />
+    <File Path=".github/scripts/generate_report_from_json.py" />
+    <File Path=".github/scripts/parse_log_to_json.py" />
+    <File Path=".github/workflows/main.yml" />
+    <File Path=".github/workflows/manual-copilot-review.yml" />
+    <File Path=".github/copilot-instructions.md" />
     <File Path=".gitignore" />
     <File Path="LICENSE" />
     <File Path="README.md" />
+    <File Path="Settings.StyleCop-DOC.txt" />
+    <File Path="Settings.StyleCop.json" />
   </Folder>
   <Project Path="ExpeditionPlanner/ExpeditionPlanner.csproj" Id="ad15a5eb-0de0-4505-93c1-9871e489a366" />
 </Solution>

@@ -3,7 +3,7 @@
 namespace ExpeditionPlanner.Models {
   public class ExplorationMission : Mission {
     public ExplorationMission() {
-      Name = "Исследовательская миссия";
+      _name = "Исследовательская миссия";
       Duration = 30;
     }
 
@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" {Name}: открыто 5 новых звёздных систем";
+      return $" {_name}: открыто 5 новых звёздных систем";
     }
   }
 }

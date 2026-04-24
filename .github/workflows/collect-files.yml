@@ -1,0 +1,263 @@
+name: Сбор исходников студентов
+
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  collect-sources:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Collect student source files
+        shell: pwsh
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH_PATTERN: '(group[1-3]/[^/]+|main)'   # <-- regex фильтр веток студентов
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PatToken      = $env:PAT_TOKEN
+          $Repository    = $env:REPO
+          $BranchPattern = $env:BRANCH_PATTERN
+
+          # Расширения файлов, которые нужно скопировать
+          $SourceExtensions = @('.cs', '.csproj', '.sln', '.slnx')
+
+          # Список исключаемых папок и файлов
+          $ExcludedDirs = @(
+              '.vscode',      # VS Code настройки
+              '.git',         # Git служебная папка
+              'Properties',   # AssemblyInfo.cs и другие свойства проекта
+              'bin',          # Скомпилированные бинарные файлы
+              'obj',          # Объектные файлы и временные файлы сборки
+              'packages',     # NuGet пакеты
+              'node_modules', # Node.js модули (если есть)
+              '.vs',          # Visual Studio служебная папка
+              'resources',    # Если содержит только ресурсы, не исходники
+              'Assets',       # Если содержит только ассеты, не исходники
+              '.github'       # Ассеты про воркер китхаба
+          )
+
+          $ExcludedFiles = @(
+              'App.config',       # Конфигурация приложения
+              'app.config',       # Альтернативный регистр
+              'App.Config',       # Другой вариант регистра
+              'packages.config',  # NuGet конфигурация
+              'AssemblyInfo.cs',  # Информация о сборке (служебный)
+              '.editorconfig',    # Настройки редактора (служебный)
+              '.gitattributes',   # Git настройки
+              '.gitignore',       # Git настройки
+              'LICENSE',          # Лицензия (не исходный код)
+              'LICENSE.md',       # Лицензия в Markdown
+              'README.md',        # Документация (не исходный код)
+              'README.txt',       # Документация
+              '.yml'              # Workflow-файлы
+          )
+
+          Write-Host "Starting source collection..."
+
+          # Получаем список веток
+          git fetch --all
+          $branches = git branch -r |
+              Where-Object { $_ -match "origin/($BranchPattern)$" } |
+              ForEach-Object { $matches[1] }
+          Write-Host "Found branches: $($branches -join ', ')"
+
+          $total   = $branches.Count
+          $index   = 0
+          $outRoot = "$env:GITHUB_WORKSPACE/collected"
+          New-Item -Path $outRoot -ItemType Directory -Force | Out-Null
+
+          foreach ($branch in $branches) {
+              $index++
+              Write-Host "`n========================================"
+              Write-Host "[$index/$total] Collecting branch: $branch"
+              Write-Host "========================================"
+
+              # Имя папки: "/" -> "_"
+              $branchSafe = $branch -replace '/', '_'
+              $destDir    = "$outRoot/$branchSafe"
+              New-Item -Path $destDir -ItemType Directory -Force | Out-Null
+              
+              # Префикс для файлов с именем ветки
+              $filePrefix = "_${branchSafe}"
+
+              # Клонируем ветку студента
+              git clone --depth 1 --branch $branch `
+                  "https://x-access-token:$PatToken@github.com/$Repository" `
+                  clone-temp
+              Push-Location clone-temp
+
+              # --- Генерируем txt с деревом всей ветки (исключая служебные файлы) ---
+              function Write-Tree {
+                  param(
+                      [string]$Path,
+                      [string]$Indent = ""
+                  )
+                  
+                  # Получаем элементы, исключая служебные папки и файлы
+                  $items = Get-ChildItem -LiteralPath $Path |
+                      Where-Object { 
+                          $_.Name -ne '.git' -and
+                          $ExcludedDirs -notcontains $_.Name -and
+                          $ExcludedFiles -notcontains $_.Name
+                      } |
+                      Sort-Object { $_.PSIsContainer } -Descending |
+                      Sort-Object Name
+                      
+                  foreach ($item in $items) {
+                      if ($item.PSIsContainer) {
+                          # Заменяем "\" на "/" в путях
+                          "$Indent$($item.Name)/"
+                          Write-Tree -Path $item.FullName -Indent "$Indent    "
+                      } else {
+                          # Проверяем, не является ли файл служебным (дополнительная проверка для вложенных)
+                          if ($ExcludedFiles -notcontains $item.Name) {
+                              "$Indent$($item.Name)"
+                          }
+                      }
+                  }
+              }
+
+              $separator = '=' * 60
+              $treeLines = @("Repository structure: $branch", $separator, "")
+              $treeLines += Write-Tree -Path (Get-Location).Path
+              $treeFile = "$destDir/${filePrefix}_structure.txt"
+              $treeLines | Out-File -FilePath $treeFile -Encoding utf8
+              Write-Host "  → structure.txt generated"
+
+              # --- Создаем склеенный файл с исходниками (.cs и .csproj файлы) ---
+              Write-Host "  → creating combined_sources.txt..."
+              
+              # Получаем все .cs и .csproj файлы, исключая служебные
+              $sourceFilesForCombine = Get-ChildItem -Recurse -File |
+                  Where-Object {
+                      ($_.Extension.ToLower() -eq '.cs' -or $_.Extension.ToLower() -eq '.csproj') -and
+                      $ExcludedDirs -notcontains $_.Directory.Name -and
+                      $_.FullName -notmatch "\\Properties\\" -and
+                      $_.FullName -notmatch "\\bin\\" -and
+                      $_.FullName -notmatch "\\obj\\"
+                  }
+              
+              # Дополнительная фильтрация по полному пути
+              $sourceFilesForCombine = $sourceFilesForCombine | Where-Object {
+                  $fullPath = $_.FullName
+                  $exclude = $false
+                  foreach ($excludedDir in $ExcludedDirs) {
+                      if ($fullPath -match "\\$excludedDir\\") {
+                          $exclude = $true
+                          break
+                      }
+                  }
+                  -not $exclude
+              }
+              
+              # Функция для получения глубины пути (для сортировки)
+              function Get-PathDepth {
+                  param([string]$Path)
+                  return ($Path -split '\\').Count
+              }
+              
+              # Сортируем файлы: сначала по глубине пути (сначала папки), затем по имени
+              $sortedFiles = $sourceFilesForCombine | Sort-Object {
+                  $depth = Get-PathDepth -Path $_.DirectoryName
+                  return $depth, $_.DirectoryName, $_.Name
+              }
+              
+              # Создаем склеенный файл
+              $combinedContent = @()
+              $combinedContent += "=== COMBINED SOURCES: $branch ==="
+              $combinedContent += "=== Total files: $($sortedFiles.Count) ==="
+              $combinedContent += ""
+              
+              foreach ($file in $sortedFiles) {
+                  # Получаем относительный путь от корня проекта и заменяем "\" на "/"
+                  $relativePath = Resolve-Path -Relative $file.FullName
+                  $relativePath = $relativePath -replace '^\.\\', ''
+                  $relativePath = $relativePath -replace '\\', '/'
+                  
+                  # Добавляем разделитель с именем файла
+                  $combinedContent += "=== File: $relativePath ==="
+                  
+                  # Читаем содержимое файла
+                  try {
+                      $content = Get-Content $file.FullName -Raw -Encoding UTF8
+                      $combinedContent += $content
+                      $combinedContent += ""  # Пустая строка после содержимого
+                  } catch {
+                      $combinedContent += "[ERROR: failed to read file]"
+                      $combinedContent += ""
+                  }
+              }
+              
+              # Сохраняем склеенный файл с префиксом
+              $combinedFile = "$destDir/${filePrefix}_combined_sources.txt"
+              $combinedContent -join "`r`n" | Out-File -FilePath $combinedFile -Encoding utf8
+              Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count))"
+
+              # --- Копируем исходные файлы в плоский список (исключая служебные) ---
+              $sourceFiles = Get-ChildItem -Recurse -File |
+                  Where-Object {
+                      $SourceExtensions -contains $_.Extension.ToLower() -and
+                      $_.FullName -notmatch '\\\.git\\' -and
+                      $ExcludedDirs -notcontains $_.Directory.Name -and
+                      $ExcludedFiles -notcontains $_.Name
+                  }
+
+              # Дополнительная фильтрация по полному пути (на случай вложенных служебных папок)
+              $sourceFiles = $sourceFiles | Where-Object {
+                  $fullPath = $_.FullName
+                  $exclude = $false
+                  foreach ($excludedDir in $ExcludedDirs) {
+                      if ($fullPath -match "\\$excludedDir\\") {
+                          $exclude = $true
+                          break
+                      }
+                  }
+                  -not $exclude
+              }
+
+              # Отслеживаем занятые имена, чтобы разрешать коллизии
+              $usedNames = @{}
+
+              foreach ($file in $sourceFiles) {
+                  $targetName = $file.Name
+
+                  if ($usedNames.ContainsKey($targetName.ToLower())) {
+                      # Добавляем префикс из относительного пути (папки через "_")
+                      $rel     = (Resolve-Path -Relative $file.FullName) -replace '^\.\\', ''
+                      $parts   = ($rel -split '\\') | Select-Object -SkipLast 1
+                      $prefix  = $parts -join '_'
+                      $targetName = "${prefix}_$($file.Name)"
+                  }
+
+                  $usedNames[$targetName.ToLower()] = $true
+                  Copy-Item $file.FullName -Destination "$destDir/$targetName" -Force
+              }
+
+              $copiedCount = $sourceFiles.Count
+              Write-Host "  → copied files: $copiedCount"
+
+              Pop-Location
+              Remove-Item -Recurse -Force clone-temp
+          }
+
+          Write-Host "`nCollection complete. Output: $outRoot"
+
+      - name: Upload collected sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-sources
+          path: collected/
