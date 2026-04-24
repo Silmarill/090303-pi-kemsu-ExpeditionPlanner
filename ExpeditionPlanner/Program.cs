@@ -4,7 +4,7 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   internal class Program {
-    private const int NumberOfRandomMissionsToGenerate = 5;
+    private const int NumberOfRandomMissionsToGenerate = 1;
     private const int RescuePeopleCount = 50;
 
     private static void Main() {
