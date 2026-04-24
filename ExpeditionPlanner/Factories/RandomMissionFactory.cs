@@ -4,9 +4,9 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _availableFactories;
-    private Random _randomGenerator;
-    private int _rescuePeopleCount;
+    private readonly List<MissionFactory> _availableFactories;
+    private readonly Random _randomGenerator;
+    private readonly int _rescuePeopleCount;
 
     public RandomMissionFactory(int rescuePeopleCount) {
       _rescuePeopleCount = rescuePeopleCount;
@@ -21,7 +21,8 @@ namespace ExpeditionPlanner.Factories {
     }
 
     public override Mission CreateMission() {
-      int factoryIndex = _randomGenerator.Next(_availableFactories.Count);
+      int factoryIndex;
+      factoryIndex = _randomGenerator.Next(_availableFactories.Count);
       MissionFactory chosenFactory = _availableFactories[factoryIndex];
       Mission resultMission = chosenFactory.CreateMission();
       return resultMission;

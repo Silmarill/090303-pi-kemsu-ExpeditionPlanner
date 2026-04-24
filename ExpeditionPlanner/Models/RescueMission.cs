@@ -7,7 +7,7 @@ namespace ExpeditionPlanner.Models {
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = 5 + peopleCount / 10;
+      Duration = 5 + (peopleCount / 10);
     }
 
     public override void Execute() {
