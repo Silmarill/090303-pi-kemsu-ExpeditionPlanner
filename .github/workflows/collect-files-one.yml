@@ -62,7 +62,6 @@ jobs:
 
           git fetch --all
           
-          # Проверяем существует ли ветка
           $branchExists = git branch -r | Where-Object { $_ -match "origin/$BranchName$" }
           if (-not $branchExists) {
               Write-Error "Branch '$BranchName' not found"
@@ -88,7 +87,6 @@ jobs:
               clone-temp
           Push-Location clone-temp
 
-          # ---- 1. structure.txt ----
           function Write-Tree {
               param([string]$Path, [string]$Indent = "")
               $items = Get-ChildItem -LiteralPath $Path |
@@ -119,7 +117,6 @@ jobs:
           $treeLines | Out-File -FilePath $treeFile -Encoding utf8
           Write-Host "  → structure.txt generated"
 
-          # ---- 2. combined_sources.txt для студента ----
           Write-Host "  → creating combined_sources.txt..."
           $sourceFilesForCombine = Get-ChildItem -Recurse -File |
               Where-Object {
@@ -166,7 +163,6 @@ jobs:
           $combinedContent -join "`r`n" | Out-File -FilePath $combinedFile -Encoding utf8
           Write-Host "  → combined_sources.txt created (files: $($sortedFiles.Count))"
 
-          # ---- 3. Копирование структуры проекта (полной) ----
           Write-Host "  → copying project structure..."
           $filesToCopy = Get-ChildItem -Recurse -File |
               Where-Object {
@@ -200,12 +196,17 @@ jobs:
           Pop-Location
           Remove-Item -Recurse -Force clone-temp
 
+          # Сохраняем безопасное имя для артефакта
+          $safeArtifactName = "student-sources-$branchSafe"
+          echo "SAFE_ARTIFACT_NAME=$safeArtifactName" >> $env:GITHUB_ENV
+
           Write-Host "`n========================================"
           Write-Host "Collection complete. Output: $outRoot"
+          Write-Host "Artifact name: $safeArtifactName"
           Write-Host "========================================"
 
       - name: Upload collected sources
         uses: actions/upload-artifact@v4
         with:
-          name: student-sources-${{ github.event.inputs.branch_name }}
+          name: ${{ env.SAFE_ARTIFACT_NAME }}
           path: collected/
