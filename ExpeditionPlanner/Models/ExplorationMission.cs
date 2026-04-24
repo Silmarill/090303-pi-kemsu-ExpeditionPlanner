@@ -8,7 +8,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine("Картографирование сектора, сбор образцов Echos");
+      Console.WriteLine("Картографирование сектора, сбор эхо-образцов");
     }
 
     public override string GetReport() {

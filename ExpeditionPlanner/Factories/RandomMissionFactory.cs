@@ -10,11 +10,11 @@ namespace ExpeditionPlanner.Factories {
     public RandomMissionFactory() {
       _factories = new List<MissionFactory>
       {
-                new ExplorationMissionFactory(),
-                new CombatMissionFactory(),
-                new CargoMissionFactory(),
-                new DiplomaticMissionFactory(),
-                new RescueMissionFactory(50)
+        new ExplorationMissionFactory(),
+        new CombatMissionFactory(),
+        new CargoMissionFactory(),
+        new DiplomaticMissionFactory(),
+        new RescueMissionFactory(50)
             };
     }
 

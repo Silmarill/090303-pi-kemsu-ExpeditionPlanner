@@ -3,15 +3,15 @@
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private int _peopleCount;
-    public int baseDuration;
-    public int peoplePerExtraDay;
+    public int BaseDuration;
+    public int PeoplePerExtraDay;
 
     public RescueMission(int peopleCount) {
-      baseDuration = 5;
-      peoplePerExtraDay = 10;
-      _peopleCount = peopleCount;
+      BaseDuration = 5;
+      PeoplePerExtraDay = 10;
+      peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = baseDuration + peopleCount / peoplePerExtraDay;
+      Duration = BaseDuration + peopleCount / PeoplePerExtraDay;
     }
 
     public override void Execute() {
