@@ -1,18 +1,21 @@
-﻿using System;
+﻿namespace ExpeditionPlanner.Models {
+  using System;
 
-namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
-    public CargoMission() {
-      Name = "Грузовая миссия";
-      Duration = 10;
+    private readonly int _deliveredTons;
+
+    public CargoMission(int duration, int deliveredTons) {
+      this.Name = "Грузовая миссия";
+      this.Duration = duration;
+      _deliveredTons = deliveredTons;
     }
 
     public override void Execute() {
-      Console.WriteLine(" Доставка ресурсов на орбитальную станцию");
+      Console.WriteLine("Доставка ресурсов на орбитальную станцию");
     }
 
     public override string GetReport() {
-      return $" {Name}: доставлено 500 тонн груза";
+      return $"Грузовая миссия: доставлено {_deliveredTons} тонн груза";
     }
   }
 }

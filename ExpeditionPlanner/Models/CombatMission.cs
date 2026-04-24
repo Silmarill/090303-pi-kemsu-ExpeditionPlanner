@@ -1,19 +1,21 @@
-﻿using System;
+﻿namespace ExpeditionPlanner.Models {
+  using System;
 
-namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
-    public CombatMission() {
-      Name = "Боевая миссия";
-      Duration = 15;
+    private readonly int _destroyedEnemyShips;
+
+    public CombatMission(int duration, int destroyedEnemyShips) {
+      this.Name = "Боевая миссия";
+      this.Duration = duration;
+      _destroyedEnemyShips = destroyedEnemyShips;
     }
 
     public override void Execute() {
-      Console.WriteLine(" Патрулирование, уничтожение пиратов");
+      Console.WriteLine("Патрулирование сектора, уничтожение пиратов");
     }
 
     public override string GetReport() {
-      return $" {Name}: уничтожено 12 вражеских кораблей";
+      return $"Боевая миссия: уничтожено {_destroyedEnemyShips} вражеских кораблей";
     }
   }
-
 }

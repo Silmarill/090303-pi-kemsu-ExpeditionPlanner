@@ -1,20 +1,31 @@
-﻿using ExpeditionPlanner.Models;
-using System;
-using System.Collections.Generic;
+﻿namespace ExpeditionPlanner.Factories {
+  using System;
+  using System.Collections.Generic;
+  using ExpeditionPlanner.Models;
 
-namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
     private readonly List<MissionFactory> _factories;
     private readonly Random _random = new Random();
 
-    public RandomMissionFactory() {
+    public RandomMissionFactory(
+        int defaultEvacuationPeopleCount,
+        int rescueBasePreparationDays,
+        int rescuePeopleEvacuatedPerDay,
+        int cargoMissionDurationDays,
+        int combatMissionDurationDays,
+        int diplomaticMissionDurationDays,
+        int explorationMissionDurationDays,
+        int cargoDeliveredTons,
+        int combatDestroyedEnemyShips,
+        int diplomaticTradeAgreements,
+        int explorationNewStarSystems) {
       _factories = new List<MissionFactory>
       {
-                new ExplorationMissionFactory(),
-                new CombatMissionFactory(),
-                new CargoMissionFactory(),
-                new DiplomaticMissionFactory(),
-                new RescueMissionFactory(50)
+                new ExplorationMissionFactory(explorationMissionDurationDays, explorationNewStarSystems),
+                new CombatMissionFactory(combatMissionDurationDays, combatDestroyedEnemyShips),
+                new CargoMissionFactory(cargoMissionDurationDays, cargoDeliveredTons),
+                new DiplomaticMissionFactory(diplomaticMissionDurationDays, diplomaticTradeAgreements),
+                new RescueMissionFactory(defaultEvacuationPeopleCount, rescueBasePreparationDays, rescuePeopleEvacuatedPerDay)
             };
     }
 

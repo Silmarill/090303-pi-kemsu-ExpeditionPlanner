@@ -1,13 +1,13 @@
-﻿using System;
+﻿namespace ExpeditionPlanner.Models {
+  using System;
 
-namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private readonly int _peopleCount;
 
-    public RescueMission(int peopleCount) {
-      _peopleCount = peopleCount;
-      Name = "Спасательная миссия";
-      Duration = 5 + peopleCount / 10;
+    public RescueMission(int peopleCount, int basePreparationDays, int peoplePerDay) {
+      this._peopleCount = peopleCount;
+      this.Name = "Спасательная миссия";
+      this.Duration = basePreparationDays + (peopleCount / peoplePerDay);
     }
 
     public override void Execute() {

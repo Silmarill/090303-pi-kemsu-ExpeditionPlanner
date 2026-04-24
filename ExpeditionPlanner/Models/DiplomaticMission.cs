@@ -1,10 +1,13 @@
-﻿using System;
+﻿namespace ExpeditionPlanner.Models {
+  using System;
 
-namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
-    public DiplomaticMission() {
-      Name = "Дипломатическая миссия";
-      Duration = 20;
+    private readonly int _tradeAgreements;
+
+    public DiplomaticMission(int duration, int tradeAgreements) {
+      this.Name = "Дипломатическая миссия";
+      this.Duration = duration;
+      _tradeAgreements = tradeAgreements;
     }
 
     public override void Execute() {
@@ -12,7 +15,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return "Дипломатическая миссия: заключено 3 торговых соглашения";
+      return $"Дипломатическая миссия: заключено {_tradeAgreements} торговых соглашения";
     }
   }
 }
