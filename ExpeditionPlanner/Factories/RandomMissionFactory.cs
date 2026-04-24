@@ -5,9 +5,9 @@ using ExpeditionPlanner.Models;
 namespace ExpeditionPlanner.Factories {
   // Фабрика, которая создает случайные миссии, используя другие фабрики для генерации различных типов миссий
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _factories;
-    private Random _random = new Random();
-    private int _countOfPeopleForRescueMission = 50;
+    private readonly List<MissionFactory> _factories;
+    private readonly Random _random = new Random();
+    private readonly int _countOfPeopleForRescueMission = 50;
 
     // Конструктор, который инициализирует список фабрик для создания различных типов миссий
     public RandomMissionFactory() {
@@ -17,15 +17,11 @@ namespace ExpeditionPlanner.Factories {
         new CombatMissionFactory(),
         new CargoMissionFactory(),
         new DiplomaticMissionFactory(),
-
-        // Используется фабрика из Задания 2
         new RescueMissionFactory(_countOfPeopleForRescueMission)
       };
     }
 
-    // Метод, который создает случайную миссию, выбирая случайную фабрику из списка и вызывая ее метод CreateMission
     public override Mission CreateMission() {
-      // Выбирается случайная фабрика
       int index = _random.Next(_factories.Count);
       return _factories[index].CreateMission();
     }

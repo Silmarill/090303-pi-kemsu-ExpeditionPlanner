@@ -5,7 +5,6 @@ namespace ExpeditionPlanner.Factories {
     public override Mission CreateMission() {
       // Создание объекта
       Mission mission;
-
       mission = new DiplomaticMission();
 
       return mission;

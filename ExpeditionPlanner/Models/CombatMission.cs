@@ -8,12 +8,11 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine(" Патрулирование, уничтожение пиратов");
+      Console.WriteLine("Патрулирование, уничтожение пиратов");
     }
 
     public override string GetReport() {
-      return $" {Name}: уничтожено 12 вражеских кораблей";
+      return $"{Name}: уничтожено 12 вражеских кораблей";
     }
   }
-
 }
