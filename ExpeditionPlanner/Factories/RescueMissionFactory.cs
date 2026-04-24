@@ -1,16 +1,15 @@
-using System;
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
-    private int _peopleCount;
+    private readonly int _rescuedCount;
 
-    public RescueMissionFactory(int peopleCount) {
-      _peopleCount = peopleCount;
+    public RescueMissionFactory(int v) {
+      _rescuedCount = v;
     }
 
     public override Mission CreateMission() {
-      return new RescueMission(_peopleCount);
+      return new RescueMission(_rescuedCount);
     }
   }
 }
