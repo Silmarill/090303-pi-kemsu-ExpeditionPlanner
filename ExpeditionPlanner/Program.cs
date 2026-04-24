@@ -6,7 +6,7 @@ using ExpeditionPlanner.Factories;
 
 namespace ExpeditionPlanner {
   internal class Program {
-    static void Main() {
+    internal static void Main() {
       // Создаём фабрики разных типов -> одну случайную фабрику вместо списка
       MissionFactory randomFactory = new RandomMissionFactory();
 
