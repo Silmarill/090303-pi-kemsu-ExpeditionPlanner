@@ -15,7 +15,7 @@ namespace ExpeditionPlanner.Factories {
         new CombatMissionFactory(),
         new CargoMissionFactory(),
         new DiplomaticMissionFactory(),
-        new RescueMissionFactory(DefaultRescuePeopleCount)
+        new RescueMissionFactory(DefaultRescuePeopleCount),
       };
     }
 
