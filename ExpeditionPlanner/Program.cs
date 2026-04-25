@@ -6,18 +6,18 @@ using System.Collections.Generic;
 namespace ExpeditionPlanner {
   class Program {
     static void Main(string[] args) {
-      int RandomMissionsCount = 4;
-      int RescueMissionPeopleCount = 100;
-      int IndexOffsetForDisplay = 1;
+      int randommissionsCount = 4;
+      int rescuemissionpeopleCount = 100;
+      int indexoffsetforDisplay = 1;
 
       RandomMissionFactory randomMissionFactory;
       randomMissionFactory = new RandomMissionFactory();
       Mission currentMission = null;
 
       Console.WriteLine("=== Случайные миссии (Задание 3) ===");
-      for (int missionIndex = 0; missionIndex < RandomMissionsCount; ++missionIndex) {
+      for (int missionIndex = 0; missionIndex < randommissionsCount; ++missionIndex) {
         currentMission = randomMissionFactory.CreateMission();
-        Console.WriteLine($"[{missionIndex + IndexOffsetForDisplay}] {currentMission.Name} ({currentMission.Duration} дн.)");
+        Console.WriteLine($"[{missionIndex + indexoffsetforDisplay}] {currentMission.Name} ({currentMission.Duration} дн.)");
         currentMission.Execute();
         Console.WriteLine(currentMission.GetReport());
         Console.WriteLine();
@@ -27,7 +27,7 @@ namespace ExpeditionPlanner {
       List<MissionFactory> concreteFactories = new List<MissionFactory>
       {
         new DiplomaticMissionFactory(),
-        new RescueMissionFactory(RescueMissionPeopleCount)
+        new RescueMissionFactory(rescuemissionpeopleCount)
       };
 
       foreach (MissionFactory currentFactory in concreteFactories) {

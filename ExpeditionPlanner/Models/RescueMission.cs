@@ -2,25 +2,23 @@
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    // Публичные константы вместо магических чисел
-    public int BaseDuration = 5;
-    public int PeoplePerDurationUnit = 10;
+    private const int BaseDuration = 5;
+    private const int PeoplePerDurationUnit = 10;
 
-    public int PeopleCount { get; set; }
-
+    private int _peopleCount;
     public RescueMission(int peopleCount) {
-      PeopleCount = peopleCount;
+      _peopleCount = peopleCount;
     }
 
     public string Name => "Спасательная миссия";
-    public int Duration => BaseDuration + PeopleCount / PeoplePerDurationUnit;
+    public int Duration => BaseDuration + _peopleCount / PeoplePerDurationUnit;
 
     public override void Execute() {
-      Console.WriteLine($"Спасательная операция: эвакуация {PeopleCount} человек");
+      Console.WriteLine($"Спасательная операция: эвакуация {_peopleCount} человек");
     }
 
     public override string GetReport() {
-      return $"Спасательная миссия: спасено {PeopleCount} человек";
+      return $"Спасательная миссия: спасено {_peopleCount} человек";
     }
   }
 }
