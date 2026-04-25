@@ -5,7 +5,7 @@ namespace ExpeditionPlanner.Models {
     private const int BaseDuration = 5;
     private const int PeoplePerDurationStep = 10;
 
-    private int _peopleCount;
+    private readonly int _peopleCount;
 
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;

@@ -4,8 +4,8 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private List<MissionFactory> _factories;
-    private Random _random = new Random();
+    private readonly List<MissionFactory> _factories;
+    private readonly Random _random = new Random();
 
     public RandomMissionFactory() {
       int rescueMissionSuccessChance = 50;
