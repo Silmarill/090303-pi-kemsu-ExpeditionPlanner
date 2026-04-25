@@ -1,7 +1,7 @@
-﻿using ExpeditionPlanner.Factories;
-using ExpeditionPlanner.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using ExpeditionPlanner.Factories;
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   public class Program {
