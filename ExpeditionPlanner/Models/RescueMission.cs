@@ -2,7 +2,7 @@
 
 namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    private int _peopleCount;
+    private readonly  int _peopleCount;
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Дипломатическая миссия";
@@ -10,7 +10,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine ($" Спасательная операция: эвакуация {_peopleCount} человек");
+      Console.WriteLine($" Спасательная операция: эвакуация {_peopleCount} человек");
     }
 
     public override string GetReport() {
