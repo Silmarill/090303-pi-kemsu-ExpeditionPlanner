@@ -50,10 +50,7 @@ namespace ExpeditionPlanner {
         new CombatMissionFactory(combatMissionDurationDays, combatDestroyedEnemyShips),
         new CargoMissionFactory(cargoMissionDurationDays, cargoDeliveredTons),
         new DiplomaticMissionFactory(diplomaticMissionDurationDays, diplomaticTradeAgreements),
-        new RescueMissionFactory(
-          defaultEvacuationPeopleCount,
-          rescueBasePreparationDays,
-          rescuePeopleEvacuatedPerDay),
+        new RescueMissionFactory(defaultEvacuationPeopleCount, rescueBasePreparationDays, rescuePeopleEvacuatedPerDay),
         new RandomMissionFactory(
           defaultEvacuationPeopleCount,
           rescueBasePreparationDays,

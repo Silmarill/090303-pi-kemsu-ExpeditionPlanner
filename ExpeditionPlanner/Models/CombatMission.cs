@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
