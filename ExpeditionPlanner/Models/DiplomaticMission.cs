@@ -6,7 +6,6 @@
       Name = "Дипломатическая миссия";
       Duration = 2;
       _tradeAgreementsCount = 0;
-
     }
 
     public override void Execute() {

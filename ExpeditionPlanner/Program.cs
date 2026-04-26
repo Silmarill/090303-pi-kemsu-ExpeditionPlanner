@@ -4,7 +4,7 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   public class Program {
-    public static void Main(string[] args) {
+    public static void Main(string[] _) {
       Console.WriteLine("=== Планировщик экспедиций ===\n");
 
       MissionFactory factory = new RandomMissionFactory();
