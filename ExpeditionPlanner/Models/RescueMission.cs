@@ -2,12 +2,12 @@
   public class RescueMission : Mission {
     private const int baseDurationDays = 5;
     private const int peoplePerAdditionalDay = 10;
-    private int _peopleCount;
+    private readonly int _peopleCount;
 
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = baseDurationDays + peopleCount / peoplePerAdditionalDay;
+      Duration = baseDurationDays + (peopleCount / peoplePerAdditionalDay);
     }
 
     public override string Execute() {

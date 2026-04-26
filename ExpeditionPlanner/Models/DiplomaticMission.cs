@@ -1,6 +1,7 @@
 ﻿namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
     private const int diplomaticMissionDurationDays = 20;
+
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
       Duration = diplomaticMissionDurationDays;
@@ -14,5 +15,4 @@
       return $" {Name}: заключены торговые соглашения";
     }
   }
-
 }
