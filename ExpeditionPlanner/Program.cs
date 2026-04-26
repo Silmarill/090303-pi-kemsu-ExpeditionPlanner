@@ -3,8 +3,7 @@ using ExpeditionPlanner.Factories;
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
-  public class Program
-  {
+  public class Program {
     public static void Main(string[] args) {
       Console.WriteLine("=== Планировщик экспедиций ===\n");
 
@@ -29,7 +28,6 @@ namespace ExpeditionPlanner {
       }
 
       Console.WriteLine("Нажмите любую клавишу для выхода...");
-      Console.ReadKey();
     }
   }
 }
