@@ -28,4 +28,5 @@ namespace ExpeditionPlanner.Factories {
       return _factories[randomIndex].CreateMission();
     }
   }
+#pragma warning disable IDE0290
 }
