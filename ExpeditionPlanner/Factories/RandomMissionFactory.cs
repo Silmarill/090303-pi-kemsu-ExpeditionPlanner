@@ -12,15 +12,14 @@ namespace ExpeditionPlanner.Factories {
 
       int rescueMissionParameter = 50;
 
-      List<MissionFactory> missionFactories = new List<MissionFactory>
-      {
+      _factories = new List<MissionFactory>
+    {
         new ExplorationMissionFactory(),
         new CombatMissionFactory(),
         new CargoMissionFactory(),
         new DiplomaticMissionFactory(),
         new RescueMissionFactory(rescueMissionParameter)
-      };
-      _factories = missionFactories;
+    };
     }
 
     public override Mission CreateMission() {
