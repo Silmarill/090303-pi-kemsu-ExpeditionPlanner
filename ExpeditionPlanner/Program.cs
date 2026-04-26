@@ -14,7 +14,6 @@ namespace ExpeditionPlanner {
       int counterI;
       counterI = 1;
       int num;
-      num = 1;
 
       for (num = counterI; num <= quantityMission; ++num) {
         Console.WriteLine($"--- Миссия {num} ---");
