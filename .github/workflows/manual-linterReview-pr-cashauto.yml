@@ -20,7 +20,7 @@ jobs:
     # При ручном запуске (workflow_dispatch) условие не применяем, чтобы можно было проверить любой PR вручную.
     if: |
       github.event_name != 'pull_request_target' ||
-      (github.event.pull_request.user.login == 'Silmarill' && github.event.pull_request.base.ref == 'test-linter')
+      (github.event.pull_request.user.login == 'Silmarill' && github.event.pull_request.base.ref == 'main')
     runs-on: windows-latest
     permissions:
       issues: write
