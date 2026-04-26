@@ -1,16 +1,14 @@
-﻿using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Factories;
+using ExpeditionPlanner.Models;
 
-namespace ExpeditionPlanner.Factories {
-  public class RescueMissionFactory : MissionFactory {
-    private readonly int _peopleCount;
+public class RescueMissionFactory : MissionFactory {
+  private readonly int _peopleCount;
 
-    public RescueMissionFactory(int peopleCount) {
-      _peopleCount = peopleCount;
-    }
-
-    public override Mission CreateMission() {
-      return new RescueMission(_peopleCount);
-    }
+  public RescueMissionFactory(int peopleCount) {
+    _peopleCount = peopleCount;
   }
-#pragma warning disable IDE0290
+
+  public override Mission CreateMission() {
+    return new RescueMission(_peopleCount);
+  }
 }

@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Factories {
 
       int rescueMissionParameter = 50;
 
-      _factories = new List<MissionFactory>
+      List<MissionFactory> missionFactories = new List<MissionFactory>
       {
         new ExplorationMissionFactory(),
         new CombatMissionFactory(),
@@ -20,6 +20,7 @@ namespace ExpeditionPlanner.Factories {
         new DiplomaticMissionFactory(),
         new RescueMissionFactory(rescueMissionParameter)
       };
+      _factories = missionFactories;
     }
 
     public override Mission CreateMission() {
@@ -28,5 +29,4 @@ namespace ExpeditionPlanner.Factories {
       return _factories[randomIndex].CreateMission();
     }
   }
-#pragma warning disable IDE0290
 }
