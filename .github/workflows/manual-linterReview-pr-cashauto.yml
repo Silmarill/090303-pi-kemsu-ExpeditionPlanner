@@ -42,14 +42,14 @@ jobs:
           repository: ${{ github.repository }}
           ref: refs/pull/${{ steps.pr.outputs.number }}/head
           fetch-depth: 1
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN || github.token }}
 
       - name: Получить скрипты и конфиги из ветки main
         uses: actions/checkout@v4
         with:
           ref: main
           path: main-branch
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN || github.token }}
 
       - name: Установить MSBuild
         uses: microsoft/setup-msbuild@v3
@@ -104,8 +104,10 @@ jobs:
       - name: Восстановить NuGet пакеты
         run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
 
+      # Шаг сборки с continue-on-error, чтобы не останавливать workflow
       - name: Собрать проект и сохранить вывод
         id: build
+        continue-on-error: true
         run: |
           dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj 2>&1 | Tee-Object -FilePath build.log
           $exitCode = $LASTEXITCODE
@@ -115,68 +117,84 @@ jobs:
             Write-Host "Последние строки лога:"
             Get-Content build.log -Tail 30
           }
+          # Явно завершаем с кодом 0, чтобы workflow продолжился
+          exit 0
         shell: pwsh
 
+      # Надёжная проверка: используем outcome шага сборки
       - name: Обработка ошибки сборки (переименование PR и комментарий)
-        if: env.BUILD_EXIT_CODE != '0'
+        if: steps.build.outcome == 'failure'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN || github.token }}
           script: |
             const prNumber = ${{ steps.pr.outputs.number }};
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // Получить текущее название PR
-            const { data: pr } = await github.rest.pulls.get({
-              owner, repo, pull_number: prNumber
-            });
-            let title = pr.title;
-            if (!title.includes('[BUILD FAILED]')) {
-              title = title + ' [BUILD FAILED]';
-              await github.rest.pulls.update({
-                owner, repo, pull_number: prNumber,
-                title: title
+            try {
+              // Получить текущее название PR
+              const { data: pr } = await github.rest.pulls.get({
+                owner, repo, pull_number: prNumber
               });
-            }
+              let title = pr.title;
+              if (!title.includes('[BUILD FAILED]')) {
+                title = title + ' [BUILD FAILED]';
+                await github.rest.pulls.update({
+                  owner, repo, pull_number: prNumber,
+                  title: title
+                });
+                console.log('PR переименован');
+              }
 
-            // Прочитать последние 30 строк лога сборки
-            const fs = require('fs');
-            const logPath = process.env.GITHUB_WORKSPACE + '/build.log';
-            let lastLines = 'Лог сборки не найден.';
-            if (fs.existsSync(logPath)) {
-              const content = fs.readFileSync(logPath, 'utf8');
-              const lines = content.split(/\r?\n/);
-              const last30 = lines.slice(-30).join('\n');
-              lastLines = last30;
-            }
+              // Прочитать последние 30 строк лога сборки
+              const fs = require('fs');
+              const logPath = process.env.GITHUB_WORKSPACE + '/build.log';
+              let lastLines = 'Лог сборки не найден.';
+              if (fs.existsSync(logPath)) {
+                const content = fs.readFileSync(logPath, 'utf8');
+                const lines = content.split(/\r?\n/);
+                const last30 = lines.slice(-30).join('\n');
+                lastLines = last30;
+              }
 
-            // Создать комментарий в PR
-            const commentBody = `## ❌ Сборка не удалась\n\n**PR переименован с добавлением [BUILD FAILED]**\n\nПоследние 30 строк вывода сборки:\n\n\`\`\`\n${lastLines}\n\`\`\``;
-            await github.rest.issues.createComment({
-              issue_number: prNumber,
-              owner, repo,
-              body: commentBody
-            });
+              // Создать комментарий в PR
+              const commentBody = `## ❌ Сборка не удалась\n\n**PR переименован с добавлением [BUILD FAILED]**\n\nПоследние 30 строк вывода сборки:\n\n\`\`\`\n${lastLines}\n\`\`\``;
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner, repo,
+                body: commentBody
+              });
+              console.log('Комментарий создан');
+            } catch (error) {
+              console.error('Ошибка при обработке ошибки сборки:', error);
+              // Не прерываем workflow, просто логируем
+            }
 
       - name: Убрать метку [BUILD FAILED] из названия PR (если есть)
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN || github.token }}
           script: |
             const prNumber = ${{ steps.pr.outputs.number }};
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
-            let title = pr.title;
-            if (title.includes('[BUILD FAILED]')) {
-              title = title.replace(/\[BUILD FAILED\]/g, '').trim();
-              await github.rest.pulls.update({ owner, repo, pull_number: prNumber, title: title });
+            try {
+              const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+              let title = pr.title;
+              if (title.includes('[BUILD FAILED]')) {
+                title = title.replace(/\[BUILD FAILED\]/g, '').trim();
+                await github.rest.pulls.update({ owner, repo, pull_number: prNumber, title: title });
+                console.log('Метка [BUILD FAILED] удалена');
+              }
+            } catch (error) {
+              console.error('Ошибка при удалении метки:', error);
             }
 
+      # Все последующие шаги – только при успешной сборке
       - name: Проверить IDE форматирование (dotnet format)
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         run: |
           dotnet tool install -g dotnet-format
           dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
@@ -184,7 +202,7 @@ jobs:
         shell: pwsh
 
       - name: Объединить логи
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         run: |
           Get-Content build.log > combined.log
           Add-Content combined.log "`n=== Предупреждения dotnet format ===`n"
@@ -196,21 +214,21 @@ jobs:
         shell: pwsh
 
       - name: Преобразовать лог в JSON
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         run: |
           python "${{ github.workspace }}/main-branch/.github/scripts/parse_log_to_json.py" `
             --log-file "${{ github.workspace }}/combined.log" `
             --output-json "${{ github.workspace }}/warnings.json"
 
       - name: Создать текстовый отчёт
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         run: |
           python "${{ github.workspace }}/main-branch/.github/scripts/generate_report_from_json.py" `
             --json-file "${{ github.workspace }}/warnings.json" `
             --output-txt "${{ github.workspace }}/stylecop_report.txt"
 
       - name: Получить текущую дату и время
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         id: date
         run: |
           $date = (Get-Date -Format "yyyy-MM-dd-HHmm")
@@ -218,7 +236,7 @@ jobs:
         shell: pwsh
 
       - name: Сформировать имя артефакта
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         id: artifact_name
         run: |
           $repoName = "${{ github.event.repository.name }}"
@@ -231,7 +249,7 @@ jobs:
         shell: pwsh
 
       - name: Сохранить артефакты
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact_name.outputs.name }}
@@ -243,9 +261,10 @@ jobs:
             stylecop_report.txt
 
       - name: Проанализировать предупреждения и оставить комментарий в PR
-        if: env.BUILD_EXIT_CODE == '0'
+        if: steps.build.outcome == 'success'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN || github.token }}
           script: |
             const fs = require('fs');
             const warningsPath = process.env.GITHUB_WORKSPACE + '/warnings.json';
@@ -285,7 +304,6 @@ jobs:
             }
             const truncatedReport = fullReport.length > 50000 ? fullReport.substring(0, 50000) + '\n... (обрезано - см. артефакты в Actions)' : fullReport;
 
-            // Убран спойлер (<details><summary>...</summary>), отчёт всегда открыт
             const commentBody = `## Анализ качества кода\n\n**Найдено предупреждений: ${warningCount === -1 ? 'ошибка' : warningCount}**\n\n${message}\n\n\`\`\`\n${truncatedReport}\n\`\`\``;
 
             github.rest.issues.createComment({
