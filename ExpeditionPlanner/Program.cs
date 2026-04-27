@@ -1,9 +1,9 @@
-﻿using ExpeditionPlanner.Models;
-using ExpeditionPlanner.Factories;
-using System.Collections.Generic;
-using System;
+﻿namespace ExpeditionPlanner {
+    using System;
+    using System.Collections.Generic;
+    using ExpeditionPlanner.Factories;
+    using ExpeditionPlanner.Models;
 
-namespace ExpeditionPlanner {
   internal class Program {
     static void Main() {
       List<MissionFactory> factories = new List<MissionFactory> { 

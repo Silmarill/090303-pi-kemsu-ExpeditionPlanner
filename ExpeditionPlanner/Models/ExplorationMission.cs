@@ -1,6 +1,6 @@
-﻿using System;
+﻿namespace ExpeditionPlanner.Models {
+    using System;
 
-namespace ExpeditionPlanner.Models {
   public class ExplorationMission : Mission {
     public ExplorationMission() {
       Name = "Исследовательская миссия";
