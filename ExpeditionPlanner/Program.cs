@@ -1,12 +1,13 @@
-﻿namespace ExpeditionPlanner {
-    using System;
-    using System.Collections.Generic;
-    using ExpeditionPlanner.Factories;
-    using ExpeditionPlanner.Models;
+﻿using System;
+using System.Collections.Generic;
+using ExpeditionPlanner.Factories;
+using ExpeditionPlanner.Models;
+
+namespace ExpeditionPlanner {
 
   internal class Program {
     static void Main() {
-      List<MissionFactory> factories = new List<MissionFactory> { 
+      List<MissionFactory> factories = new List<MissionFactory> {
         new RandomMissionFactories()
       };
 

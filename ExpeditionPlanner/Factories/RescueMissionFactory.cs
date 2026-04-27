@@ -1,5 +1,6 @@
-﻿namespace ExpeditionPlanner.Factories {
-    using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Models;
+
+namespace ExpeditionPlanner.Factories {
 
   public class RescueMissionFactory : MissionFactory {
     int _peopleCount;

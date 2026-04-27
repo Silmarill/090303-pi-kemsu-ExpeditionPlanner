@@ -1,7 +1,8 @@
-﻿namespace ExpeditionPlanner.Factories {
-    using System;
-    using System.Collections.Generic;
-    using ExpeditionPlanner.Models;
+﻿using System;
+using System.Collections.Generic;
+using ExpeditionPlanner.Models;
+
+namespace ExpeditionPlanner.Factories {
 
   public class RandomMissionFactories : MissionFactory {
     private List<MissionFactory> _factories = new List<MissionFactory>();
@@ -16,14 +17,14 @@
 
     public override Mission CreateMission() {
       int randomIndex = _random.Next(_factories.Count + 1);
-      
+
       if (randomIndex == _factories.Count) {
         int peopleCount = _random.Next(10, 101);
         MissionFactory rescueMissionFactory = new RescueMissionFactory(peopleCount);
         Mission rescueMission = rescueMissionFactory.CreateMission();
         return rescueMission;
       }
-      
+
       MissionFactory randomFactory = _factories[randomIndex];
       Mission newMission = randomFactory.CreateMission();
       return newMission;

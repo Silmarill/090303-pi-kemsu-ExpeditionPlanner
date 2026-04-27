@@ -1,5 +1,6 @@
-﻿namespace ExpeditionPlanner.Models {
-    using System;
+﻿using System;
+
+namespace ExpeditionPlanner.Models {
 
   public class ExplorationMission : Mission {
     public ExplorationMission() {
