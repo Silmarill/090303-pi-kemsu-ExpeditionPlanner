@@ -104,7 +104,6 @@ jobs:
       - name: Восстановить NuGet пакеты
         run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
 
-      # ИЗМЕНЁННЫЙ ШАГ: не прерываем workflow при ошибке, а сохраняем код возврата
       - name: Собрать проект и сохранить вывод
         id: build
         run: |
@@ -118,7 +117,6 @@ jobs:
           }
         shell: pwsh
 
-      # НОВЫЙ ШАГ: обработка ошибки сборки (переименование PR и комментарий)
       - name: Обработка ошибки сборки (переименование PR и комментарий)
         if: env.BUILD_EXIT_CODE != '0'
         uses: actions/github-script@v7
@@ -161,7 +159,6 @@ jobs:
               body: commentBody
             });
 
-      # НОВЫЙ ШАГ: удаление метки [BUILD FAILED] при успешной сборке
       - name: Убрать метку [BUILD FAILED] из названия PR (если есть)
         if: env.BUILD_EXIT_CODE == '0'
         uses: actions/github-script@v7
@@ -178,7 +175,6 @@ jobs:
               await github.rest.pulls.update({ owner, repo, pull_number: prNumber, title: title });
             }
 
-      # Все последующие шаги выполняются только при успешной сборке
       - name: Проверить IDE форматирование (dotnet format)
         if: env.BUILD_EXIT_CODE == '0'
         run: |
@@ -275,9 +271,9 @@ jobs:
             if (warningCount === 0) {
               message = '✅ Все автоматические проверки кода прошли успешно.';
             } else if (warningCount > 0 && warningCount <= 5) {
-              message = '👍 В целом неплохо, хорошая работа! Пожалуйста, ознакомьтесь с небольшими предупреждениями выше.';
+              message = '👍 В целом неплохо, хорошая работа! Пожалуйста, ознакомьтесь с небольшими замечаниями.';
             } else if (warningCount > 5) {
-              message = '⚠️ Требуется доработка. Ознакомьтесь с замечаниями выше и исправьте код.';
+              message = '⚠️ Требуется доработка. Ознакомьтесь с замечаниями и исправьте код.';
             } else {
               message = '❌ Не удалось получить количество предупреждений. Проверьте логи сборки вручную.';
             }
@@ -288,7 +284,9 @@ jobs:
               fullReport = fs.readFileSync(reportPath, 'utf8');
             }
             const truncatedReport = fullReport.length > 50000 ? fullReport.substring(0, 50000) + '\n... (обрезано - см. артефакты в Actions)' : fullReport;
-            const commentBody = `## Анализ качества кода\n\n**Найдено предупреждений: ${warningCount === -1 ? 'ошибка' : warningCount}**\n\n${message}\n\n<details><summary>📋 Полный отчёт</summary>\n\n\`\`\`\n${truncatedReport}\n\`\`\`\n</details>`;
+
+            // Убран спойлер (<details><summary>...</summary>), отчёт всегда открыт
+            const commentBody = `## Анализ качества кода\n\n**Найдено предупреждений: ${warningCount === -1 ? 'ошибка' : warningCount}**\n\n${message}\n\n\`\`\`\n${truncatedReport}\n\`\`\``;
 
             github.rest.issues.createComment({
               issue_number: ${{ steps.pr.outputs.number }},
