@@ -104,10 +104,9 @@ jobs:
       - name: Восстановить NuGet пакеты
         run: dotnet restore ExpeditionPlanner/ExpeditionPlanner.csproj
 
-      # Шаг сборки с continue-on-error, чтобы не останавливать workflow
-      - name: Собрать проект и сохранить вывод
+      # Шаг сборки БЕЗ continue-on-error, реальный код возврата
+      - name: Собрать проект
         id: build
-        continue-on-error: true
         run: |
           dotnet build ExpeditionPlanner/ExpeditionPlanner.csproj 2>&1 | Tee-Object -FilePath build.log
           $exitCode = $LASTEXITCODE
@@ -116,14 +115,13 @@ jobs:
             Write-Host "❌ Сборка завершилась с ошибкой. Код: $exitCode"
             Write-Host "Последние строки лога:"
             Get-Content build.log -Tail 30
+            exit $exitCode   # Реальная ошибка, workflow продолжит только шаги с if: failure()
           }
-          # Явно завершаем с кодом 0, чтобы workflow продолжился
-          exit 0
         shell: pwsh
 
-      # Надёжная проверка: используем outcome шага сборки
+      # Этот шаг выполнится ТОЛЬКО если сборка упала (failure)
       - name: Обработка ошибки сборки (переименование PR и комментарий)
-        if: steps.build.outcome == 'failure'
+        if: failure()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PAT_TOKEN || github.token }}
@@ -168,11 +166,11 @@ jobs:
               console.log('Комментарий создан');
             } catch (error) {
               console.error('Ошибка при обработке ошибки сборки:', error);
-              // Не прерываем workflow, просто логируем
             }
 
+      # Удалить метку [BUILD FAILED] в случае успешной сборки
       - name: Убрать метку [BUILD FAILED] из названия PR (если есть)
-        if: steps.build.outcome == 'success'
+        if: success()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PAT_TOKEN || github.token }}
@@ -194,7 +192,7 @@ jobs:
 
       # Все последующие шаги – только при успешной сборке
       - name: Проверить IDE форматирование (dotnet format)
-        if: steps.build.outcome == 'success'
+        if: success()
         run: |
           dotnet tool install -g dotnet-format
           dotnet format ExpeditionPlanner/ExpeditionPlanner.csproj style --verify-no-changes --severity info > ide_warnings.txt 2>&1
@@ -202,7 +200,7 @@ jobs:
         shell: pwsh
 
       - name: Объединить логи
-        if: steps.build.outcome == 'success'
+        if: success()
         run: |
           Get-Content build.log > combined.log
           Add-Content combined.log "`n=== Предупреждения dotnet format ===`n"
@@ -214,21 +212,21 @@ jobs:
         shell: pwsh
 
       - name: Преобразовать лог в JSON
-        if: steps.build.outcome == 'success'
+        if: success()
         run: |
           python "${{ github.workspace }}/main-branch/.github/scripts/parse_log_to_json.py" `
             --log-file "${{ github.workspace }}/combined.log" `
             --output-json "${{ github.workspace }}/warnings.json"
 
       - name: Создать текстовый отчёт
-        if: steps.build.outcome == 'success'
+        if: success()
         run: |
           python "${{ github.workspace }}/main-branch/.github/scripts/generate_report_from_json.py" `
             --json-file "${{ github.workspace }}/warnings.json" `
             --output-txt "${{ github.workspace }}/stylecop_report.txt"
 
       - name: Получить текущую дату и время
-        if: steps.build.outcome == 'success'
+        if: success()
         id: date
         run: |
           $date = (Get-Date -Format "yyyy-MM-dd-HHmm")
@@ -236,7 +234,7 @@ jobs:
         shell: pwsh
 
       - name: Сформировать имя артефакта
-        if: steps.build.outcome == 'success'
+        if: success()
         id: artifact_name
         run: |
           $repoName = "${{ github.event.repository.name }}"
@@ -249,7 +247,7 @@ jobs:
         shell: pwsh
 
       - name: Сохранить артефакты
-        if: steps.build.outcome == 'success'
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact_name.outputs.name }}
@@ -261,7 +259,7 @@ jobs:
             stylecop_report.txt
 
       - name: Проанализировать предупреждения и оставить комментарий в PR
-        if: steps.build.outcome == 'success'
+        if: success()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PAT_TOKEN || github.token }}
