@@ -9,7 +9,7 @@ namespace ExpeditionPlanner {
   public class Program {
      static void Main() {
       // Создаём фабрики разных типов
-      List<MissionFactory> factories = new List<MissionFactory>
+      List<MissionFactory> fatories = new List<MissionFactory>
       {
             new ExplorationMissionFactory(),
             new CombatMissionFactory(),
