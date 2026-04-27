@@ -1,4 +1,5 @@
-﻿using ExpeditionPlanner.Models;
+﻿using System;
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class CargoMissionFactory : MissionFactory
