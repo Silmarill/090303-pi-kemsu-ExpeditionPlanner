@@ -4,6 +4,7 @@
     public int Duration;
 
     public abstract void Execute();
+
     public abstract string GetReport();
 
     public virtual string GetExecutionMessage() {
