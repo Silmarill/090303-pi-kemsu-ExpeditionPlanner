@@ -17,7 +17,7 @@ namespace ExpeditionPlanner {
       Console.WriteLine($"Отчёт: {mission.GetReport()}");
 
       Console.WriteLine("\nНажмите любую клавишу для завершения...");
-      Console.ReadKey();
+      _ = Console.ReadKey();
     }
   }
 }
