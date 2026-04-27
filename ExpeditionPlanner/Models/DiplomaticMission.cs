@@ -1,7 +1,6 @@
 ﻿using System;
 
 namespace ExpeditionPlanner.Models {
-
   public class DiplomaticMission : Mission {
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";

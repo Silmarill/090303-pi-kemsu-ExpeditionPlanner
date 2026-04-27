@@ -1,7 +1,6 @@
 ﻿using System;
 
 namespace ExpeditionPlanner.Models {
-
   public class RescueMission : Mission {
     private int _peopleCount;
 

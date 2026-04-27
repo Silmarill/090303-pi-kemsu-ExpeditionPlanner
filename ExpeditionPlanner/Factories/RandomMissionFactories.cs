@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
-
   public class RandomMissionFactories : MissionFactory {
     private List<MissionFactory> _factories = new List<MissionFactory>();
     private Random _random = new Random();
