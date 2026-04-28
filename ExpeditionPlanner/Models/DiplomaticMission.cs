@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
     private readonly int _durationDays = 20;
     private readonly int _tradeAgreementsCount = 3;

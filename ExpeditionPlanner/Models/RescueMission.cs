@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpeditionPlanner.Models {
+﻿namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
     private readonly int _peopleCount;
     private readonly int _baseDurationDays = 5;
@@ -13,7 +11,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      // бизнес-логика 
+      // бизнес-логика
     }
 
     public override string GetReport() {
