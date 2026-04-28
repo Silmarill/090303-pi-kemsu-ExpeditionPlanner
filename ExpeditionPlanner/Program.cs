@@ -1,6 +1,6 @@
 using System;
-using ExpeditionPlanner.Models;
 using ExpeditionPlanner.Factories;
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   internal class Program {
