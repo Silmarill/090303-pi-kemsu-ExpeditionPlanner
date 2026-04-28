@@ -6,20 +6,19 @@ namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
     private readonly List<MissionFactory> _factories;
     private readonly Random _random;
-    private readonly int howManyPeopleResc;
+    private readonly int _howManyPeopleResc;
 
-    public RandomMissionFactory(int rescPpl) {
+    public RandomMissionFactory(int rescuePeople) {
       _random = new Random();
-
+      _howManyPeopleResc = rescuePeople;
       _factories = new List<MissionFactory>
       {
             new ExplorationMissionFactory(),
             new CombatMissionFactory(),
             new CargoMissionFactory(),
             new DiplomaticMissionFactory(),
-            new RescueMissionFactory(howManyPeopleResc)
+            new RescueMissionFactory(_howManyPeopleResc)
       };
-      howManyPeopleResc = rescPpl;
     }
 
     public override Mission CreateMission() {

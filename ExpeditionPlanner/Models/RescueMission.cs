@@ -5,7 +5,6 @@ namespace ExpeditionPlanner.Models {
     private readonly int _peopleCount = 0;
 
     public RescueMission(int peopleCount) {
-
       _peopleCount = peopleCount;
       _name = "Спасательная миссия";
       Duration = 5 + (peopleCount / 10);

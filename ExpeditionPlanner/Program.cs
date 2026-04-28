@@ -7,9 +7,9 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
   public class Program {
-    private static readonly int howManyPeopleResc = 50;
-    public static void Main() {
+    private static readonly int _howManyPeopleResc = 50;
 
+    public static void Main() {
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory>
       {
@@ -17,8 +17,8 @@ namespace ExpeditionPlanner {
             new CombatMissionFactory(),
             new CargoMissionFactory(),
             new DiplomaticMissionFactory(),
-            new RescueMissionFactory(howManyPeopleResc),
-            new RandomMissionFactory(howManyPeopleResc)
+            new RescueMissionFactory(_howManyPeopleResc),
+            new RandomMissionFactory(_howManyPeopleResc)
       };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
