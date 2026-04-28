@@ -9,7 +9,7 @@ namespace ExpeditionPlanner.Models {
     public RescueMission(int _peopleCount) {
       this._peopleCount = _peopleCount;
       Name = "🚀 Спасательная миссия";
-      Duration = BaseDuration + this._peopleCount / PeoplePerExtraDay;
+      Duration = BaseDuration + (this._peopleCount / PeoplePerExtraDay);
     }
 
     public override void Execute() {
