@@ -5,7 +5,7 @@ namespace ExpeditionPlanner.Factories {
     private int _peopleCount;
 
     public RescueMissionFactory(int peopleCount) {
-      this._peopleCount = peopleCount;
+      _peopleCount = peopleCount;
     }
 
     public override Mission CreateMission() {
