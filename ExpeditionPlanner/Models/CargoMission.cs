@@ -8,11 +8,11 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine(" Доставка ресурсов на орбитальную станцию");
+      Console.WriteLine("🚚 Доставка ресурсов на орбитальную станцию");
     }
 
     public override string GetReport() {
-      return $" {_name}: доставлено 500 тонн груза";
+      return $"📦 {_name}: доставлено 500 тонн груза";
     }
   }
 }

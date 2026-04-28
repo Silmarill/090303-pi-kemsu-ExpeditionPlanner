@@ -8,11 +8,11 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override void Execute() {
-      Console.WriteLine(" Картографирование сектора, сбор научных данных");
+      Console.WriteLine("🧐 Картографирование сектора, сбор научных данных");
     }
 
     public override string GetReport() {
-      return $" {_name}: открыто 5 новых звёздных систем";
+      return $" 💫 {_name}: открыто 5 новых звёздных систем";
     }
   }
 }

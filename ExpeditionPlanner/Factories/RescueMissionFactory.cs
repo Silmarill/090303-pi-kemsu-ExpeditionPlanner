@@ -12,10 +12,11 @@ namespace ExpeditionPlanner.Factories {
     public override Mission CreateMission() {
       RescueMission rescuemission = new RescueMission(_peopleCount);
       // Проверка на правильность подсчитанных дней
-      int _peopleCountForOneDay = 10;
+      int peopleCountForOneDay = 10,
+        halfPeopleCountForOneDay = 5;
       int incorrectCountDaysForMission = 0;
 
-      if (((5 + _peopleCount) % _peopleCountForOneDay) != incorrectCountDaysForMission) {
+      if (((halfPeopleCountForOneDay + _peopleCount) % peopleCountForOneDay) != incorrectCountDaysForMission) {
         ++rescuemission.Duration;
       }
 

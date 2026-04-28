@@ -8,15 +8,9 @@ using ExpeditionPlanner.Models;
 namespace ExpeditionPlanner {
   public class Program {
     public static void Main() {
-      Random random = new Random();
-      RescueMissionFactory rescueFacrory = new RescueMissionFactory(random.Next(0, 100));
       // Создаём фабрики разных типов
       List<MissionFactory> factories = new List<MissionFactory> {
-        new ExplorationMissionFactory(),
-        new CombatMissionFactory(),
-        new CargoMissionFactory(),
-        new DiplomaticMissionFactory(),
-        rescueFacrory
+        new RandomMissionFactory()
       };
 
       Console.WriteLine("=== План миссий на месяц ===\n");
