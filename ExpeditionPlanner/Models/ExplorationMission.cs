@@ -2,11 +2,9 @@
 
 namespace ExpeditionPlanner.Models {
   public class ExplorationMission : Mission {
-    private readonly int _defaultDurationDays = 30;
-
     public ExplorationMission() {
       Name = "Исследовательская миссия";
-      Duration = _defaultDurationDays;
+      Duration = 30;
     }
 
     public override void Execute() {
