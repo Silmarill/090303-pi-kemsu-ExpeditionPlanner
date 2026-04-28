@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $"📦 {_name}: доставлено 500 тонн груза";
+      return $"📦 {_name}: грузовые суда доставлены";
     }
   }
 }

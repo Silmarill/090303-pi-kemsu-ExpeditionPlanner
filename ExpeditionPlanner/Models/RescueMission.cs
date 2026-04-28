@@ -5,6 +5,7 @@ namespace ExpeditionPlanner.Models {
     private readonly int _peopleCount;
     private readonly int _peopleCountForOneDay = 10;
     private readonly int halfPeopleCountForOneDay = 5;
+
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       _name = "Спасательная миссия";

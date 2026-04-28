@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" {_name}: уничтожено 12 вражеских кораблей";
+      return $" {_name}: вражеские корабли уничтожены";
     }
   }
 }

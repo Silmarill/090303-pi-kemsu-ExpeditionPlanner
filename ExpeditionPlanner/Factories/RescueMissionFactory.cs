@@ -1,5 +1,4 @@
-﻿
-using ExpeditionPlanner.Models;
+﻿using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
@@ -11,6 +10,7 @@ namespace ExpeditionPlanner.Factories {
 
     public override Mission CreateMission() {
       RescueMission rescuemission = new RescueMission(_peopleCount);
+
       // Проверка на правильность подсчитанных дней
       int peopleCountForOneDay = 10,
         halfPeopleCountForOneDay = 5;

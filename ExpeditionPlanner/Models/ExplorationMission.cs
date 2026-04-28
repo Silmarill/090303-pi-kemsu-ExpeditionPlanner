@@ -12,7 +12,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $" 💫 {_name}: открыто 5 новых звёздных систем";
+      return $" 💫 {_name}: открыто несколько новых звёздных систем";
     }
   }
 }

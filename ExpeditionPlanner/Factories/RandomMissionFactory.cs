@@ -1,6 +1,6 @@
 ﻿using System;
-using ExpeditionPlanner.Models;
 using System.Collections.Generic;
+using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
@@ -12,8 +12,7 @@ namespace ExpeditionPlanner.Factories {
 
     public RandomMissionFactory() {
       _rescueFacrory = new RescueMissionFactory(
-        _random.Next(_minCount, _maxPeopleCountForRescueMission)
-      );
+        _random.Next(_minCount, _maxPeopleCountForRescueMission));
       _factories = new List<MissionFactory>() {
         new ExplorationMissionFactory(),
         new CombatMissionFactory(),
@@ -28,7 +27,6 @@ namespace ExpeditionPlanner.Factories {
       randomFactoryIndex = _random.Next(_minCount, _factories.Count);
       Mission newmission = _factories[randomFactoryIndex].CreateMission();
       return newmission;
-
     }
   }
 }
