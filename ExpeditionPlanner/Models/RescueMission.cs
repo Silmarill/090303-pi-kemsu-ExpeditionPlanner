@@ -10,8 +10,13 @@ namespace ExpeditionPlanner.Models {
       _peopleCount = peopleCount;
     }
 
-    public string Name => "Спасательная миссия";
-    public int Duration => BaseDuration + _peopleCount / PeoplePerDurationUnit;
+    public new string Name {
+      get { return "Спасательная миссия"; }
+    }
+
+    public new int Duration {
+      get { return BaseDuration + _peopleCount / PeoplePerDurationUnit; }
+    }
 
     public override void Execute() {
       Console.WriteLine($"Спасательная операция: эвакуация {_peopleCount} человек");
