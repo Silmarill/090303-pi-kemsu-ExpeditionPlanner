@@ -15,5 +15,4 @@ namespace ExpeditionPlanner.Models {
       return $" {Name}: уничтожено 12 вражеских кораблей";
     }
   }
-
 }
