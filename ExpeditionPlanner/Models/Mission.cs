@@ -4,6 +4,7 @@
     public int Duration;
 
     public abstract string Execute();
+
     public abstract string GetReport();
   }
 }

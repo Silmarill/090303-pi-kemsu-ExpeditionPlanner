@@ -1,10 +1,10 @@
 ﻿namespace ExpeditionPlanner.Models {
   public class DiplomaticMission : Mission {
-    private const int diplomaticMissionDurationDays = 20;
+    private const int DiplomaticMissionDurationDays = 20;
 
     public DiplomaticMission() {
       Name = "Дипломатическая миссия";
-      Duration = diplomaticMissionDurationDays;
+      Duration = DiplomaticMissionDurationDays;
     }
 
     public override string Execute() {

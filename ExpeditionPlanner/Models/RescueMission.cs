@@ -1,13 +1,13 @@
 ﻿namespace ExpeditionPlanner.Models {
   public class RescueMission : Mission {
-    private const int baseDurationDays = 5;
-    private const int peoplePerAdditionalDay = 10;
+    private const int BaseDurationDays = 5;
+    private const int PeoplePerAdditionalDay = 10;
     private readonly int _peopleCount;
 
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
       Name = "Спасательная миссия";
-      Duration = baseDurationDays + (peopleCount / peoplePerAdditionalDay);
+      Duration = BaseDurationDays + (peopleCount / PeoplePerAdditionalDay);
     }
 
     public override string Execute() {

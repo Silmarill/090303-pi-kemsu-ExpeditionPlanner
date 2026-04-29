@@ -4,7 +4,7 @@ using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner.Factories {
   public class RandomMissionFactory : MissionFactory {
-    private const int rescueMissionPeopleSave = 50;
+    private const int RescueMissionPeopleSave = 50;
     private readonly List<MissionFactory> _factories;
     private readonly Random _random;
 
@@ -14,7 +14,7 @@ namespace ExpeditionPlanner.Factories {
         new CombatMissionFactory(),
         new CargoMissionFactory(),
         new DiplomaticMissionFactory(),
-        new RescueMissionFactory(rescueMissionPeopleSave)
+        new RescueMissionFactory(RescueMissionPeopleSave)
       };
 
       _random = new Random();
