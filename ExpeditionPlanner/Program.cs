@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 
 namespace ExpeditionPlanner {
-  class Program {
-    static void Main(string[] args) {
+  public class Program {
+    public static void Main(string[] args) {
       int randommissionsCount = 4;
       int rescuemissionpeopleCount = 100;
       int indexoffsetforDisplay = 1;
@@ -26,9 +26,9 @@ namespace ExpeditionPlanner {
       Console.WriteLine("=== Конкретные фабрики ===");
       List<MissionFactory> concreteFactories = new List<MissionFactory>
       {
-        new DiplomaticMissionFactory(),
-        new RescueMissionFactory(rescuemissionpeopleCount)
-      };
+                new DiplomaticMissionFactory(),
+                new RescueMissionFactory(rescuemissionpeopleCount)
+            };
 
       foreach (MissionFactory currentFactory in concreteFactories) {
         currentMission = currentFactory.CreateMission();

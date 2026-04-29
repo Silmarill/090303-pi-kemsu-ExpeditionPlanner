@@ -5,7 +5,8 @@ namespace ExpeditionPlanner.Models {
     private const int BaseDuration = 5;
     private const int PeoplePerDurationUnit = 10;
 
-    private int _peopleCount;
+    private readonly int _peopleCount;
+
     public RescueMission(int peopleCount) {
       _peopleCount = peopleCount;
     }
@@ -15,7 +16,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public new int Duration {
-      get { return BaseDuration + _peopleCount / PeoplePerDurationUnit; }
+      get { return BaseDuration + (_peopleCount / PeoplePerDurationUnit); }
     }
 
     public override void Execute() {
