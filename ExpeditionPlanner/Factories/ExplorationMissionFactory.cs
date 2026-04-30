@@ -4,6 +4,11 @@ namespace ExpeditionPlanner.Factories {
   public class ExplorationMissionFactory : MissionFactory {
     private readonly int _duration;
     private readonly int _newStarSystems;
+    private int v;
+
+    public ExplorationMissionFactory(int v) {
+      this.v = v;
+    }
 
     public ExplorationMissionFactory(int duration, int newStarSystems) {
       _duration = duration;
