@@ -2,7 +2,7 @@
 
 namespace ExpeditionPlanner.Models {
   public class CargoMission : Mission {
-    private int _deliveredTons;
+    private readonly int _deliveredTons;
 
     public CargoMission(int duration, int deliveredTons) {
       Name = "Грузовая миссия";

@@ -2,7 +2,7 @@
 
 namespace ExpeditionPlanner.Models {
   public class CombatMission : Mission {
-    private int _destroyedEnemyShips;
+    private readonly int _destroyedEnemyShips;
 
     public CombatMission(int duration, int destroyedEnemyShips) {
       Name = "Боевая миссия";

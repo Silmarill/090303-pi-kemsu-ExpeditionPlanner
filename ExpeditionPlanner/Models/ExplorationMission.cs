@@ -2,7 +2,7 @@
 
 namespace ExpeditionPlanner.Models {
   public class ExplorationMission : Mission {
-    private int _newStarSystems;
+    private readonly int _newStarSystems;
 
     public ExplorationMission(int duration, int newStarSystems) {
       Name = "Исследовательская миссия";

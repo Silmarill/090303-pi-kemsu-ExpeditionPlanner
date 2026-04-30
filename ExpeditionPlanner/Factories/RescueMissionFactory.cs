@@ -3,12 +3,7 @@
 namespace ExpeditionPlanner.Factories {
   public class RescueMissionFactory : MissionFactory {
     private readonly int _peopleCount;
-    private int rescuePeopleEvacuatedPerDay;
-    private int vova;
-
-    public RescueMissionFactory(int viva) {
-      this.vova = viva;
-    }
+    private readonly int rescuePeopleEvacuatedPerDay;
 
     public RescueMissionFactory(int peopleCount, int rescueBasePreparationDays) {
       _peopleCount = peopleCount;

@@ -2,8 +2,8 @@
 
 namespace ExpeditionPlanner.Factories {
   public class DiplomaticMissionFactory : MissionFactory {
-    private int diplomaticMissionDurationDays;
-    private int diplomaticTradeAgreements;
+    private readonly int diplomaticMissionDurationDays;
+    private readonly int diplomaticTradeAgreements;
 
     public DiplomaticMissionFactory() {
     }
