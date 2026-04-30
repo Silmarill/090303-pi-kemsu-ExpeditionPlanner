@@ -4,7 +4,7 @@ namespace ExpeditionPlanner.Factories {
   public class CargoMissionFactory : MissionFactory {
     private readonly int _duration;
     private readonly int _deliveredTons;
-    private int v;
+    private readonly int v;
 
     public CargoMissionFactory(int v) {
       this.v = v;
