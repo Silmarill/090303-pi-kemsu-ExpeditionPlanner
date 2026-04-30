@@ -2,16 +2,19 @@
 
 namespace ExpeditionPlanner.Factories {
   public class DiplomaticMissionFactory : MissionFactory {
-    private int _duration;
-    private int _tradeAgreements;
+    private int diplomaticMissionDurationDays;
+    private int diplomaticTradeAgreements;
 
-    public DiplomaticMissionFactory(int duration, int tradeAgreements) {
-      _duration = duration;
-      _tradeAgreements = tradeAgreements;
+    public DiplomaticMissionFactory() {
+    }
+
+    public DiplomaticMissionFactory(int diplomaticMissionDurationDays, int diplomaticTradeAgreements) {
+      this.diplomaticMissionDurationDays = diplomaticMissionDurationDays;
+      this.diplomaticTradeAgreements = diplomaticTradeAgreements;
     }
 
     public override Mission CreateMission() {
-      return new DiplomaticMission(_duration, _tradeAgreements);
+      return new DiplomaticMission();
     }
   }
 }
