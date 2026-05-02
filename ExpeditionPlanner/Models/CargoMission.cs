@@ -15,7 +15,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $"Грузовая миссия: доставлено {_deliveredTons} тонн груза";
+      return $"📄 Грузовая миссия: доставлено {_deliveredTons} тонн груза";
     }
   }
 }

@@ -15,7 +15,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $"Исследовательская миссия: открыто {_newStarSystems} новых систем";
+      return $"📄 Исследовательская миссия: открыто {_newStarSystems} новых систем";
     }
   }
 }

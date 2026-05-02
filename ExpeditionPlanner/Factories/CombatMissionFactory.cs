@@ -5,9 +5,6 @@ namespace ExpeditionPlanner.Factories {
     private readonly int _duration;
     private readonly int _destroyedEnemyShips;
 
-    public CombatMissionFactory(int v) {
-    }
-
     public CombatMissionFactory(int duration, int destroyedEnemyShips) {
       _duration = duration;
       _destroyedEnemyShips = destroyedEnemyShips;

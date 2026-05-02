@@ -15,7 +15,7 @@ namespace ExpeditionPlanner.Models {
     }
 
     public override string GetReport() {
-      return $"Боевая миссия: уничтожено {_destroyedEnemyShips} вражеских кораблей";
+      return $"📄 Боевая миссия: уничтожено {_destroyedEnemyShips} вражеских кораблей";
     }
   }
 }

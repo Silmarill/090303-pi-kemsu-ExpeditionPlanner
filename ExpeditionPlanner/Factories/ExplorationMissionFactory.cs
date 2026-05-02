@@ -5,9 +5,6 @@ namespace ExpeditionPlanner.Factories {
     private readonly int _duration;
     private readonly int _newStarSystems;
 
-    public ExplorationMissionFactory(int v) {
-    }
-
     public ExplorationMissionFactory(int duration, int newStarSystems) {
       _duration = duration;
       _newStarSystems = newStarSystems;
