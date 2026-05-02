@@ -5,9 +5,6 @@ namespace ExpeditionPlanner.Factories {
     private readonly int _duration;
     private readonly int _deliveredTons;
 
-    public CargoMissionFactory(int v) {
-    }
-
     public CargoMissionFactory(int duration, int deliveredTons) {
       _duration = duration;
       _deliveredTons = deliveredTons;

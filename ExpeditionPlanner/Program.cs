@@ -3,10 +3,10 @@ using ExpeditionPlanner.Factories;
 using ExpeditionPlanner.Models;
 
 namespace ExpeditionPlanner {
-  class Program {
+  public class Program {
     private const int NumberOfRandomMissions = 5;
 
-    static void Main() {
+    public static void Main() {
       Console.OutputEncoding = System.Text.Encoding.UTF8;
       Console.WriteLine("=== План миссий на месяц ===\n");
 
