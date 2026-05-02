@@ -21,7 +21,7 @@ namespace ExpeditionPlanner {
       }
 
       Console.WriteLine("\nНажмите любую клавишу для выхода...");
-      Console.ReadKey();
+      _ = Console.ReadKey();
     }
   }
 }
